@@ -1,0 +1,27 @@
+@media (min-width: 320px) and (max-width: 490px) {
+    
+    .NavList button{
+        max-width: 75px !important;
+        font-size: 10px;
+    }
+    .table button{
+        margin-bottom: 10px;
+    }
+  }
+
+  @media (min-width: 490px) and (max-width: 600px) {
+    
+    .NavList button{
+        max-width: 100px !important;
+        font-size: 9px;
+    }
+    .table button{
+        margin-bottom: 10px;
+    }
+  }
+
+  @media (min-width: 592px) and (max-width: 902px){
+    .NavList{
+        justify-content: space-evenly;
+    }
+  }

@@ -1,0 +1,32 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.2.0",
+    "bcrypt": "^5.1.0",
+    "chokidar": "^3.5.3",
+    "config": "^3.3.9",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "jsonwebtoken": "^9.0.1",
+    "memorystore": "^1.6.7",
+    "mysql2": "^3.6.0",
+    "nodemon": "^2.0.22",
+    "oracledb": "^5.5.0",
+    "prisma": "^5.2.0",
+    "sequelize": "^6.32.0",
+    "ws": "^8.13.0"
+  }
+}

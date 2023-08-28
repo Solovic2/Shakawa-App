@@ -1,0 +1,10 @@
+.contolePanel {
+    margin: 50px auto;
+    max-width: 1200px;
+    padding: 20px;
+    direction: rtl;
+    text-align: center;
+  }
+  .contolePanel button{
+    margin-left: 10px;
+  }

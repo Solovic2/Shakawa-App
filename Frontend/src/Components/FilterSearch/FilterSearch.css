@@ -1,0 +1,119 @@
+.searchBar {
+    display: flex;
+    height: 40px;
+    margin-top: 10px;
+    justify-content: center;
+  }
+  .selector {
+    width: 120px;
+    height: 40px;
+    margin-left: 20px;
+    position: relative;
+    direction: rtl;
+  }
+  
+  .selector select {
+    width: 100%;
+    height: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    appearance: none;
+    background-color: white;
+    background-image: linear-gradient(to bottom, #f9f9f9, #e8e8e8);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .selector::after {
+
+    font: var(--fa-font-solid);
+    content: "\f0d7";
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #999;
+    font-size: 14px;
+  }
+  
+  .selector select:focus {
+    outline: none;
+    border-color: #5c9ded;
+    box-shadow: 0 2px 5px rgba(92, 157, 237, 0.25);
+  }
+.search {
+    width: 300px;
+    height: 40px;
+    padding: 10px;
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    font-size: 16px;
+}
+.toggleBtn{
+  width: 100px !important;
+  margin-right:10px;
+  color:#1f1c1c !important;
+  font-weight: bold !important;
+  
+}
+.searchBar input::placeholder{
+  text-align: center;
+}
+@media screen and (min-width: 320px ) and (max-width: 480px) {
+  .search{
+    width: 160px;
+  }
+  .toggleBtn{
+    font-size: 13px !important;
+    margin-right: 3px !important;
+    width: 88px !important;
+  }
+  .selector{
+    width: 40px;
+    height: 40px;
+    margin-left: 5px;
+  }
+  .selector::after{
+    left: 0px;
+  }
+}
+@media screen and (min-width: 480px ) and (max-width: 600px) {
+  .search{
+    width: 125px;
+  }
+  .toggleBtn{
+    font-size: 15px !important;
+    margin-right: 3px !important;
+    width: 100px !important;
+  }
+  .selector{
+    width: 85px;
+    height: 40px;
+    margin-left: 5px;
+  }
+  .selector::after{
+    left: 3px;
+  }
+}
+
+@media screen and (min-width: 600px ) and (max-width: 768px) {
+  .search{
+    width: 200px;
+  }
+  .toggleBtn{
+    font-size: 15px !important;
+    margin-right: 3px !important;
+    width: 100px !important;
+  }
+  .selector{
+    width: 85px;
+    height: 40px;
+    margin-left: 5px;
+  }
+  .selector::after{
+    left: 3px;
+  }
+}

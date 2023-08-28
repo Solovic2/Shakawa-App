@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User{
+  id Int @id @default(autoincrement())  
+  username String @unique
+  password String
+  role Role @default(User)
+  groupId Int
+  group Group @relation(fields: [groupId], references: [id], onUpdate: Cascade, onDelete: Cascade) 
+  files File[]
+}
+
+model Group {
+  id Int @id @default(autoincrement()) 
+  name String @default("SHAKAWA") @unique
+  users User[]
+  files File[]
+}
+
+model File{
+  id Int @id @default(autoincrement()) 
+  path String @unique
+  info String? @default("")
+  flag Int? @default(0)
+  status Status? @default(ON_UNSEEN)
+  groupId Int? 
+  group Group? @relation(fields: [groupId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  userId Int?
+  user User? @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+}
+
+enum Status {
+  ON_SOLVE
+  ON_HOLD
+  ON_UNSEEN
+}
+enum Role {
+  Admin
+  Manager
+  User
+}

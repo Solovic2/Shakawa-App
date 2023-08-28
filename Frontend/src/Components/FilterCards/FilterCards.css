@@ -1,0 +1,189 @@
+.card-container {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card {
+  border: 1px solid gray;
+  border-radius: 5px;
+  margin: 10px;
+  padding: 10px;
+  width: 320px;
+  height: 380px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.card.card-user {
+  height: 250px !important;
+}
+
+.card.card-manager {
+  height: 300px !important;
+}
+
+.deleteBtn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 5px;
+}
+
+.card.card-admin .mobile {
+  margin-top: 40px;
+}
+
+.card-label {
+  display: block;
+}
+
+.card-info {
+  float: right;
+  font-weight: 600;
+}
+
+.audio-element .audio {
+  height: 75px;
+}
+
+.audio-element .button {
+  height: 50px;
+  margin-top: 10px;
+}
+
+.audio-float {
+  display: block;
+  float: right;
+  font-weight: 600;
+}
+
+.reply-and-edit {
+  direction: rtl;
+  color: red;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.edit-button {
+  margin-top: 10px;
+}
+
+.edit-button button {
+  background-color: #fff;
+  border: 1px solid #333;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  color: #333;
+}
+.attach-file {
+  margin-top: 10px;
+  direction: rtl;
+}
+
+.attach-file select {
+  text-align: center;
+  width: 180px;
+  padding: 5px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.attach-file select:focus {
+  outline: none;
+  border-color: #007bff;
+}
+.attach-file form button {
+  font-size: 15px;
+  background-color: #009578;
+  border-radius: 10px;
+  color: white;
+  border: none;
+}
+.attach-file .edit-button button{
+    float: left;
+}
+.scrollable-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 100%;
+  max-height: 50px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc #f2f2f2;
+}
+
+.reply-and-edit label {
+  color: #000;
+  font-size: 18px;
+}
+
+
+.scrollable-content {
+  max-width: 100%;
+}
+
+/* Style the scrollbar */
+.scrollable-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollable-container::-webkit-scrollbar-track {
+  background-color: #f2f2f2;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 20px;
+  border: 3px solid #f1f1f1;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}
+
+.scrollable-container::-webkit-scrollbar-corner {
+  background-color: #f1f1f1;
+}
+
+.scrollable-container.show-scrollbar::-webkit-scrollbar {
+  width: 0px;
+  background-color: transparent;
+  display: none;
+}
+
+.form-submit {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  direction: rtl;
+}
+
+.my-input {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 5px;
+  font-size: 14px;
+  height: 30px;
+  width: 200px;
+}
+
+.deleteBtn i {
+  font-size: 20px;
+  color: #dc3545;
+}
+
+@media (max-width: 320px) {
+  .audio audio {
+    width: 200px;
+  }
+}

@@ -1,0 +1,31 @@
+
+
+npm install -g http-server
+cd C:/Users/islam/Desktop/temp/
+E:\Islam\React\clientReactApp\node_modules\.bin\http-server -p 8000
+http-server -p 8000 --cors
+
+// Restrictions 
+Set-ExecutionPolicy RemoteSigned 
+and after press y run the http-server -p 8000 and return  Set-ExecutionPolicy Restricted 
+
+
+npm install react-bootstrap bootstrap
+
+
+icons
+npm i --save @fortawesome/free-solid-svg-icons
+npm i --save @fortawesome/free-regular-svg-icons
+
+npm install jquery
+npm i -D react-router-dom
+
+npm i redux-persist
+npm i react-redux
+
+npm install react-cookie
+
+npm install --save @fortawesome/fontawesome-free
+
+npm install js-cookie
+npm install jwt-decode
