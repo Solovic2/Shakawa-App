@@ -146,7 +146,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
         const data = await response.json();
         if (data) {
           console.log(data);
-          setValues((prevData) => {
+          setFilterData((prevData) => {
             const updatedData = prevData.map((card) => {
               if (card.path === path) {
                 return { ...card, info: data.info, status: data.status };
