@@ -1,43 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import "./FilterSearch.css"
 import { useNavigate } from 'react-router';
-import { useCookies } from 'react-cookie';
+
 const FilterSearch = (props) => {
-  const [isToggled, setIsToggled] = useState(false);
+
   const navigate = useNavigate()
-  const { user, setValues, setFilterData } = props;
-  const folderPath = process.env.FOLDER_PATH;
-  const [, , removeCookie] = useCookies(['user']);
-
-
-  useEffect(() => {
-      fetch("http://localhost:9000/" , {
-        credentials: 'include'
-      })
-        .then(async response => {
-          if (!response.ok) {
-            if (response.status === 401) {
-              throw new Error('You are not authenticated');
-            } else {
-              const errorData = await response.json();
-              console.log(errorData);
-              throw new Error('Error fetching data');
-            }
-          }else{
-            const data = await response.json();
-            if (data) {
-              setValues(data);
-              setFilterData(data);
-              setIsToggled(false);
-            }
-          }
-        })
-        .catch(error => {
-          removeCookie('user', { path: '/' });
-          navigate("/login");
-        });
-  
-  }, [navigate, folderPath]);
+  const {setValues, setFilterData, setIsToggled, isToggled } = props;
 
   const handleClick = async (event) => {
     event.preventDefault();

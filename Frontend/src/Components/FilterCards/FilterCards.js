@@ -35,7 +35,6 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
     function toggleScrollbar() {
       console.log(infoContainer.clientHeight);
       if (infoContainer.scrollHeight > infoContainer.clientHeight) {
-        console.log("SSS");
         infoContainer.classList.remove("show-scrollbar");
       } else {
         infoContainer.classList.add("show-scrollbar");
@@ -108,13 +107,26 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
       console.error("Error deleting card:", error);
     }
   };
+
+  // Handle Edit Reply Submit
+  const handleEdit = (path) => {
+    setShowForm((prevShowForm) => ({
+      ...prevShowForm,
+      [path]: !prevShowForm[path],
+    }));
+  };
+
   // Handle When Submit
-  const handleSubmit = async (event, path) => {
+  const handleSubmit = async (event, path, status) => {
     event.preventDefault(); // prevent default form submission behavior
     const inputValue = event.target.elements.infoInput.value;
+    const selection = selectedValues[path] ? selectedValues[path] : status;
+    console.log(selection + " " + inputValue);
     if (inputValue !== "") {
-      // do something with the input value, like submit it to a server
-      // Update
+      const formData = {
+        info: inputValue,
+        status: selection,
+      };
       try {
         const response = await fetch(
           `http://localhost:9000/update-complain/${encodeURI(path)}`,
@@ -124,37 +136,36 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
               "Content-Type": "application/json",
             },
             credentials: "include",
-            body: JSON.stringify({ info: inputValue }),
+            body: JSON.stringify(formData),
           }
         );
 
         if (!response.ok) {
           throw new Error("Failed to delete card");
         }
-        setValues((prevData) => {
-          const updatedData = prevData.map((card) => {
-            if (card.path === path) {
-              return { ...card, info: inputValue };
-            }
-            return card;
+        const data = await response.json();
+        if (data) {
+          console.log(data);
+          setValues((prevData) => {
+            const updatedData = prevData.map((card) => {
+              if (card.path === path) {
+                return { ...card, info: data.info, status: data.status };
+              }
+              return card;
+            });
+            return updatedData;
           });
-          return updatedData;
-        });
+        } else {
+          console.log("Error On submitting");
+        }
+        setShowForm((prevShowForm) => ({
+          ...prevShowForm,
+          [path]: false,
+        }));
       } catch (error) {
         console.error("Error deleting card:", error);
       }
-      setShowForm((prevShowForm) => ({
-        ...prevShowForm,
-        [path]: false,
-      }));
     }
-  };
-  // Handle Edit Reply Submit
-  const handleEdit = (path) => {
-    setShowForm((prevShowForm) => ({
-      ...prevShowForm,
-      [path]: !prevShowForm[path],
-    }));
   };
 
   // Handle Edit Reply Submit
@@ -165,18 +176,19 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
     }));
   };
 
-  const handleSelectChange = (elementId, selectedValue) => {
+  const handleSelectChange = (path, selectedValue) => {
     setSelectedValues((prevSelectedValues) => ({
       ...prevSelectedValues,
-      [elementId]: selectedValue,
+      [path]: selectedValue,
     }));
   };
 
-  const handleAttachShakwaToGroup = async (event, path) => {
+  const handleAttachShakwaToGroup = async (event, path, group) => {
     event.preventDefault();
+    const selection = selectedValues[path] ? selectedValues[path] : group;
     const formData = {
       path: path,
-      group: selectedValues[path],
+      group: selection,
     };
     try {
       const response = await fetch(
@@ -200,15 +212,23 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
 
       const data = await response.json();
       if (data) {
-        setValues((prevData) => {
+        console.log(data);
+        setFilterData((prevData) => {
           const updatedData = prevData.map((card) => {
             if (card.path === path) {
-              return { ...card, groupId: selectedValues[path] };
+              return {
+                ...card,
+                info: data.info,
+                repliedBy: data.userId === null ? null : card.repliedBy,
+                groupId: data.groupId,
+                status: data.status,
+              };
             }
             return card;
           });
           return updatedData;
         });
+        
       } else {
         console.log("Error On submitting");
       }
@@ -249,6 +269,26 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
             </div>
           );
         }
+        let statusBadge = "badge text-bg-danger";
+        let statusValue = "لم تقرأ بعد";
+        switch (element.status) {
+          case "ON_UNSEEN":
+            statusBadge = "badge text-bg-danger";
+            statusValue = "لم تقرأ بعد";
+            break;
+          case "ON_HOLD":
+            statusBadge = "badge text-bg-warning";
+            statusValue = "قيد الإنتظار";
+            break;
+          case "ON_SOLVE":
+            statusBadge = "badge bg-success";
+            statusValue = "تم الحل";
+            break;
+
+          default:
+            statusBadge = "badge text-bg-danger";
+            break;
+        }
         return (
           <div key={index} id="card" className={cardClass}>
             <div className="mobile">
@@ -264,6 +304,9 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
               </label>
             </div>
             <div className="audio-element">{audioElement}</div>
+            <div className="card-status">
+              <span className={statusBadge}>{statusValue}</span>
+            </div>
             {user && user.role !== "User" && (
               <div className="deleteBtn">
                 <button
@@ -281,13 +324,18 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                 </label>
                 <form
                   onSubmit={(event) =>
-                    handleAttachShakwaToGroup(event, element.path)
+                    handleAttachShakwaToGroup(
+                      event,
+                      element.path,
+                      element.groupId
+                    )
                   }
                 >
                   <SelectComponent
                     key={index}
                     element={element}
                     groups={groups}
+                    status={null}
                     onSelectChange={(selectedValue) =>
                       handleSelectChange(element.path, selectedValue)
                     }
@@ -312,7 +360,6 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                 )}
               </div>
             )}
-
             <div className="reply-and-edit">
               <label>
                 {element.repliedBy !== null ? (
@@ -330,9 +377,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                 {element.info !== null && element.info !== "" ? (
                   <div className="scrollable-content">{element.info}</div>
                 ) : (
-                  <div className="scrollable-content">
-                    لم يتم الرد حتى الآن
-                  </div>
+                  <div className="scrollable-content">لم يتم الرد حتى الآن</div>
                 )}
               </div>
             </div>
@@ -351,16 +396,30 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                   showForm[element.path]) && (
                   <div className="form-submit">
                     <form
-                      onSubmit={(event) => handleSubmit(event, element.path)}
-                      className="d-flex justify-content-between w-100"
+                      onSubmit={(event) =>
+                        handleSubmit(event, element.path, element.status)
+                      }
                     >
+                      <SelectComponent
+                        key={index}
+                        element={element}
+                        groups={null}
+                        status={["ON_SOLVE", "ON_HOLD", "ON_UNSEEN"]}
+                        onSelectChange={(selectedValue) =>
+                          handleSelectChange(element.path, selectedValue)
+                        }
+                        edit={showForm[element.path]}
+                      />
+
                       <input
                         type="text"
                         name="infoInput"
                         className="my-input mr-2"
                         placeholder="الرد"
                         defaultValue={element.info}
+                        required
                       />
+
                       <button type="submit" className="btn btn-sm btn-success">
                         {showForm[element.path] ? "تعديل" : "إضافة رد"}
                       </button>

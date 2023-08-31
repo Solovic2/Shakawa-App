@@ -4,11 +4,45 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import FilterSearch from '../FilterSearch/FilterSearch';
 import FilterCards from '../FilterCards/FilterCards';
+import { useCookies } from 'react-cookie';
 const FilterBox = ({user, notify}) => {
   const navigate = useNavigate()
   const [values, setValues] = useState([]);
   const [filterData, setFilterData] = useState([]);
   const [eventAction, setEventAction] = useState();
+  const [, , removeCookie] = useCookies(['user']);
+  const [isToggled, setIsToggled] = useState(false);
+  const folderPath = process.env.FOLDER_PATH;
+
+
+  useEffect(() => {
+    fetch("http://localhost:9000/" , {
+      credentials: 'include'
+    })
+      .then(async response => {
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('You are not authenticated');
+          } else {
+            const errorData = await response.json();
+            console.log(errorData);
+            throw new Error('Error fetching data');
+          }
+        }else{
+          const data = await response.json();
+          if (data) {
+            setValues(data);
+            setFilterData(data);
+            setIsToggled(false);
+          }
+        }
+      })
+      .catch(error => {
+        removeCookie('user', { path: '/' });
+        navigate("/login");
+      });
+
+}, []);
     // Get Data From Database And Use WebSocket To Listen When File Added Or Deleted
     useEffect(() => {
       const ws = new WebSocket('ws://localhost:9099');
@@ -18,17 +52,29 @@ const FilterBox = ({user, notify}) => {
       });
   
       ws.addEventListener('message', (event) => {
-      
         const message = JSON.parse(event.data);
-        
-        if (message.type === 'add') {
-        
-            setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
-            notify(1, prev => prev + 1)
-          
-          
-        } else if (message.type === 'delete') {
-          
+        // if (message.type === 'user_add' && user.role === "User" && user.groupId === message.data.groupId && message.data.groupId !== message.prevGroupID){
+        //   console.log("FIRST ONE");
+        //   setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
+        //   notify(1, prev => prev + 1)
+        // }
+        // else if (message.type === 'user_delete_add' && user.role === "User" ){
+        //   console.log("SECOND ONE");
+        //   if( message.data.groupId === user.groupId){
+        //     setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
+        //     notify(1, prev => prev + 1)
+        //   }  
+        //   else{
+        //     setFilterData((prevValues) => prevValues.filter(data => data.path !== message.data.path));
+        //     notify(2, prev => prev - 1)
+        //   }
+         
+        // }
+        if (message.type === 'add' && user.role !== "User") {
+          setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
+          notify(1, prev => prev + 1)
+      
+        } else if (message.type === 'delete' && user.role !== "User") {
             setFilterData((prevValues) => prevValues.filter(data => data.path !== message.data.path));
             notify(2, prev => prev - 1)
           
@@ -36,13 +82,14 @@ const FilterBox = ({user, notify}) => {
           console.warn('Received unknown message type:', message.type);
         }
       });
+
   
      
   
       return () => {
         ws.close();
       };
-    }, [navigate, notify]);
+    }, []);
     
   // Filter Data When Values Changes Or Press Any Key In Search Bar
   useEffect(() => {
@@ -64,10 +111,10 @@ const FilterBox = ({user, notify}) => {
 
   return (
     <>
-      <FilterSearch user = {user} handleChange={handleChange} setValues={setValues} setFilterData={setFilterData} />
+      <FilterSearch user = {user} handleChange={handleChange} setValues={setValues} setFilterData={setFilterData} setIsToggled = {setIsToggled} isToggled ={isToggled}/>
       <FilterCards user = {user} data={filterData} setFilterData={setFilterData} setValues={setValues} notify = {notify} />
     </>
   )
 }
 
-export default FilterBox
+export default React.memo(FilterBox)

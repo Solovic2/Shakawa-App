@@ -3,7 +3,6 @@ const router = express.Router();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const prisma = require("../prisma/prismaClient");
-
 router.post("/register", async (req, res) => {
   try {
     const body = req.body.data;
@@ -39,7 +38,6 @@ router.post("/register", async (req, res) => {
           signed: true,
           maxAge: 1000 * 60 * 60 * 24, // 1 day
         };
-      
         const token = jwt.sign( createUser , process.env.SECRET_KEY);
 
         res.cookie("user", token, options);

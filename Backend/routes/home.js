@@ -35,6 +35,9 @@ watcher
         mobile: data[0],
         fileDate: data[1],
         fileType: data[2],
+        repliedBy: null,
+        groupId: null,
+        status: Status.ON_UNSEEN,
       },
     };
     const message = JSON.stringify(item);
@@ -207,7 +210,7 @@ async function getSpecifiedFiles(user) {
       mobile: data[0],
       fileDate: data[1],
       fileType: data[2],
-      repliedBy: files[i].user?.username,
+      repliedBy: files[i].user ? files[i].user.username : null,
       groupId: files[i].groupId,
       status: files[i].status,
     };
@@ -297,12 +300,13 @@ router.post("/attach-file-to-group", requireAuth, async (req, res) => {
     });
     
     let updateData = {};
-    
-    if (existingFile && existingFile.groupId !== +data.group) {
+    const isSameGroupID = existingFile && existingFile.groupId !== +data.group
+    if (!isSameGroupID) {
       updateData = {
         groupId: +data.group,
         info: "",
-        userId: null
+        userId: null,
+        status: Status.ON_UNSEEN
       };
     } else {
       updateData = {
@@ -321,7 +325,29 @@ router.post("/attach-file-to-group", requireAuth, async (req, res) => {
         info: "",
         userId: null,
       },
+
     });
+
+    // let item = null
+
+    // if(!isSameGroupID){
+    //    item = {
+    //     type : "user_delete_add",
+    //     data: updateOrAddFile,
+    //     prevGroupID : existingFile.groupId
+    //   }
+    // }else{
+    //   item = {
+    //     type : "user_add",
+    //     data: updateOrAddFile,
+    //     prevGroupID : existingFile.groupId 
+    //   }
+    // }
+    // console.log(updateOrAddFile);
+    // const message = JSON.stringify(item);
+    // wss.clients.forEach((client) => {
+    //   client.send(message);
+    // });
     res.status(200).json(updateOrAddFile);
   } catch (e) {
     if (e.code === "P2002") {
@@ -345,12 +371,14 @@ router.put("/update-complain/:path", requireAuth, async (req, res) => {
       },
       update: {
         info: data.info,
+        status: data.status,
         groupId: +user.groupId,
         userId: +user.id,
       },
       create: {
         path: pathParam,
         info: data.info,
+        status: data.status,
         groupId: +user.groupId,
         userId: +user.id,
       },
