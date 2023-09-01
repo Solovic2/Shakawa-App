@@ -7,24 +7,25 @@ const NotificationBar = (props) => {
   const flag = props.flag;
   const notifyFlag = props.notifyFlag;
   useEffect(() => {
-    if (flag !== 0 && flag !== 3) {
+    if (flag !== 0 && flag !== 4) {
       setShowAlert(true);
       const timeoutId = setTimeout(() => {
         setShowAlert(false);
       }, 2000);
       return () => clearTimeout(timeoutId);
-    }else if (flag === 3) {
-        setShowAlert(true);
-        let timeoutId1 = setTimeout(() => {
-            setShowAlert(false);
-            setShowAlertAddDelete(true)
-            let timeoutId2 = setTimeout(() => {
-              setShowAlertAddDelete(false);
-            }, 1000);
-            return () => clearTimeout(timeoutId2);
-          }, 1000);
-          return () => clearTimeout(timeoutId1);
     }
+    // else if (flag === 3) {
+    //     setShowAlert(true);
+    //     let timeoutId1 = setTimeout(() => {
+    //         setShowAlert(false);
+    //         setShowAlertAddDelete(true)
+    //         let timeoutId2 = setTimeout(() => {
+    //           setShowAlertAddDelete(false);
+    //         }, 1000);
+    //         return () => clearTimeout(timeoutId2);
+    //       }, 1000);
+    //       return () => clearTimeout(timeoutId1);
+    // }
   }, [flag, notifyFlag]);
 
   if (flag === 1) {
@@ -49,22 +50,34 @@ const NotificationBar = (props) => {
         )}
       </>
     );
-  }else if (flag === 3) {
+  }
+  else if(flag === 3) {
     return (
       <>
         {showAlert && (
-            <div className="alert alert-danger" role="alert">
-                تم حذف فايل الآن
-            </div>
-        )}
-         {showAlertAddDelete  && (
-            <div className="alert alert-info" role="alert">
-                تم إضافة فايل جديد الآن
+            <div className="alert alert-success" role="alert">
+                تم تغيير حالة الشكوى او يوجد رد جديد 
             </div>
         )}
       </>
     );
   }
+  // else if (flag === 3) {
+  //   return (
+  //     <>
+  //       {showAlert && (
+  //           <div className="alert alert-danger" role="alert">
+  //               تم حذف فايل الآن
+  //           </div>
+  //       )}
+  //        {showAlertAddDelete  && (
+  //           <div className="alert alert-info" role="alert">
+  //               تم إضافة فايل جديد الآن
+  //           </div>
+  //       )}
+  //     </>
+  //   );
+  // }
 
   return <></>;
 };

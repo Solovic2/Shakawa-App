@@ -53,34 +53,53 @@ const FilterBox = ({user, notify}) => {
   
       ws.addEventListener('message', (event) => {
         const message = JSON.parse(event.data);
-        // if (message.type === 'user_add' && user.role === "User" && user.groupId === message.data.groupId && message.data.groupId !== message.prevGroupID){
-        //   console.log("FIRST ONE");
-        //   setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
-        //   notify(1, prev => prev + 1)
-        // }
-        // else if (message.type === 'user_delete_add' && user.role === "User" ){
-        //   console.log("SECOND ONE");
-        //   if( message.data.groupId === user.groupId){
-        //     setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
-        //     notify(1, prev => prev + 1)
-        //   }  
-        //   else{
-        //     setFilterData((prevValues) => prevValues.filter(data => data.path !== message.data.path));
-        //     notify(2, prev => prev - 1)
-        //   }
-         
-        // }
-        if (message.type === 'add' && user.role !== "User") {
-          setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
-          notify(1, prev => prev + 1)
-      
-        } else if (message.type === 'delete' && user.role !== "User") {
+        console.log(message);
+        if(user.role !== "User"){
+          if (message.type === 'add') {
+            setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
+            notify(1, prev => prev + 1)
+        
+          } else if (message.type === 'delete') {
+              setFilterData((prevValues) => prevValues.filter(data => data.path !== message.data.path));
+              notify(2, prev => prev - 1)
+          } else if(message.type === 'statusOrReply_changed'){
+            setFilterData((prevData) => {
+              const updatedData = prevData.map((card) => {
+                if (card.path === message.data.path) {
+                  return { ...card, info: message.data.info, status: message.data.status };
+                }
+                return card;
+              });
+              return updatedData;
+            });
+            notify(3, prev => prev + 1)
+          }
+          else {
+            console.warn('Received unknown message type:', message.type);
+          }
+        }else{
+          if (message.type === 'delete' && message.data.groupId === user.groupId) {
             setFilterData((prevValues) => prevValues.filter(data => data.path !== message.data.path));
             notify(2, prev => prev - 1)
-          
-        } else {
-          console.warn('Received unknown message type:', message.type);
+          }
+          if (message.type === 'user_add' && user.groupId === message.data.groupId  && message.data.groupId !== message.prevGroupID){
+            setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
+            notify(1, prev => prev + 1)
+          }
+          else if (message.type === 'user_delete_add'){
+            if( message.data.groupId === user.groupId){
+              setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
+              notify(1, prev => prev + 1)
+            }  
+            else if(message.prevGroupID !== null && message.prevGroupID === user.groupId){
+              setFilterData((prevValues) => prevValues.filter(data => data.path !== message.data.path));
+              notify(2, prev => prev - 1)
+            }
+            
+          }
+         
         }
+     
       });
 
   

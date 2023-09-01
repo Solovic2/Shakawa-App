@@ -47,16 +47,20 @@ watcher
   })
   .on("unlink", async (path) => {
     console.log(`File ${path} has been removed`);
-    await prisma.file.deleteMany({
-      where: {
-        path: path,
-      },
-    });
+    let deleteData = null;
+    try {
+      deleteData = await prisma.file.delete({
+        where: {
+          path: path,
+        },
+      });
+    } catch (error) {}
 
     let message = {
       type: "delete",
       data: {
         path: path,
+        groupId: deleteData ? deleteData.groupId : null,
       },
     };
     wss.clients.forEach((client) => {
@@ -102,7 +106,7 @@ function getSortedFilesByLastModifiedTime(directoryPath) {
     fileDetails.push({
       path: filePath,
       name: file,
-      lastModified: stats.mtime
+      lastModified: stats.mtime,
     });
   });
 
@@ -132,13 +136,13 @@ async function readAllFiles(folderPath) {
           user: true,
         },
       });
-      
+
       for (let i = 0; i < paths.length; i++) {
         const path = paths[i];
         const data = splitPath(path);
         // Check if path exists in disabledFiles
-        const index =  disabledFiles.findIndex((df) => df.path === path);
-        
+        const index = disabledFiles.findIndex((df) => df.path === path);
+
         if (index !== -1) {
           const fileData = {
             path: path,
@@ -146,7 +150,9 @@ async function readAllFiles(folderPath) {
             mobile: data[0],
             fileDate: data[1],
             fileType: data[2],
-            repliedBy: disabledFiles[index].user ? disabledFiles[index].user.username : null,
+            repliedBy: disabledFiles[index].user
+              ? disabledFiles[index].user.username
+              : null,
             groupId: disabledFiles[index].groupId,
             status: disabledFiles[index].status,
           };
@@ -298,22 +304,22 @@ router.post("/attach-file-to-group", requireAuth, async (req, res) => {
         path: data.path,
       },
     });
-    
+
     let updateData = {};
-    const isSameGroupID = existingFile && existingFile.groupId !== +data.group
+    const isSameGroupID = existingFile && existingFile.groupId !== +data.group;
     if (!isSameGroupID) {
       updateData = {
         groupId: +data.group,
         info: "",
         userId: null,
-        status: Status.ON_UNSEEN
+        status: Status.ON_UNSEEN,
       };
     } else {
       updateData = {
         groupId: +data.group,
       };
     }
-    
+
     const updateOrAddFile = await prisma.file.upsert({
       where: {
         path: data.path,
@@ -325,29 +331,22 @@ router.post("/attach-file-to-group", requireAuth, async (req, res) => {
         info: "",
         userId: null,
       },
-
     });
+    const splitData = splitPath(data.path);
+    updateOrAddFile.mobile = splitData[0];
+    updateOrAddFile.fileDate = splitData[1];
+    updateOrAddFile.fileType = splitData[2];
+    updateOrAddFile.repliedBy = null;
 
-    // let item = null
-
-    // if(!isSameGroupID){
-    //    item = {
-    //     type : "user_delete_add",
-    //     data: updateOrAddFile,
-    //     prevGroupID : existingFile.groupId
-    //   }
-    // }else{
-    //   item = {
-    //     type : "user_add",
-    //     data: updateOrAddFile,
-    //     prevGroupID : existingFile.groupId 
-    //   }
-    // }
-    // console.log(updateOrAddFile);
-    // const message = JSON.stringify(item);
-    // wss.clients.forEach((client) => {
-    //   client.send(message);
-    // });
+    let item = {
+      type: isSameGroupID ? "user_delete_add" : "user_add",
+      data: updateOrAddFile,
+      prevGroupID: existingFile ? existingFile.groupId : null,
+    };
+    const message = JSON.stringify(item);
+    wss.clients.forEach((client) => {
+      client.send(message);
+    });
     res.status(200).json(updateOrAddFile);
   } catch (e) {
     if (e.code === "P2002") {
@@ -365,6 +364,14 @@ router.put("/update-complain/:path", requireAuth, async (req, res) => {
     const pathParam = req.params.path;
     const data = req.body;
     const { user } = req;
+
+    const existingFile = await prisma.file.findUnique({
+      where: {
+        path: pathParam,
+      },
+    });
+    const isSameStatus = existingFile && existingFile.status === data.status;
+    const isSameReply = existingFile && existingFile.info === data.info ;
     const updateOrAddFile = await prisma.file.upsert({
       where: {
         path: pathParam,
@@ -383,6 +390,17 @@ router.put("/update-complain/:path", requireAuth, async (req, res) => {
         userId: +user.id,
       },
     });
+    
+    if(!isSameStatus || !isSameReply){
+      let item = {
+        type: "statusOrReply_changed",
+        data: updateOrAddFile,
+      };
+      const message = JSON.stringify(item);
+      wss.clients.forEach((client) => {
+        client.send(message);
+      });
+    }
     res.status(200).json(updateOrAddFile);
   } catch (error) {
     console.error("Error updating database:", error);

@@ -33,7 +33,6 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
       return;
     }
     function toggleScrollbar() {
-      console.log(infoContainer.clientHeight);
       if (infoContainer.scrollHeight > infoContainer.clientHeight) {
         infoContainer.classList.remove("show-scrollbar");
       } else {
@@ -121,7 +120,6 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
     event.preventDefault(); // prevent default form submission behavior
     const inputValue = event.target.elements.infoInput.value;
     const selection = selectedValues[path] ? selectedValues[path] : status;
-    console.log(selection + " " + inputValue);
     if (inputValue !== "") {
       const formData = {
         info: inputValue,
@@ -145,7 +143,6 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
         }
         const data = await response.json();
         if (data) {
-          console.log(data);
           setFilterData((prevData) => {
             const updatedData = prevData.map((card) => {
               if (card.path === path) {
@@ -212,7 +209,6 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
 
       const data = await response.json();
       if (data) {
-        console.log(data);
         setFilterData((prevData) => {
           const updatedData = prevData.map((card) => {
             if (card.path === path) {
