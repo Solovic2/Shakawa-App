@@ -10,6 +10,8 @@ const EditUser = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("User");
+  const [groups, setGroups] = useState([]);
+  const [group, setGroup] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,8 +25,32 @@ const EditUser = () => {
       return;
     }
   }, [user, navigate]);
+
   useEffect(() => {
-    fetch(`http://localhost:9000/admin/edit/${params.id}`, {
+    fetch("http://localhost:9000/admin/groups", {
+      credentials: "include",
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error("You are not authenticated");
+          } else {
+            throw new Error("Error fetching data");
+          }
+        }
+
+        const data = await response.json();
+        if (data) {
+          setGroups(data);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
+
+  useEffect(() => {
+    fetch(`http://localhost:9000/admin/edit-user/${params.id}`, {
       credentials: "include",
     })
       .then((response) => {
@@ -42,12 +68,11 @@ const EditUser = () => {
       })
       .then((data) => {
         setUsername(data.username || "");
-        setPassword(data.password || "");
+        setPassword("");
         setRole(data.role || "User");
+        setGroup(data.groupId || "");
       })
       .catch(async (error) => {
-        // Display the error message
-
         setError(error.message);
       });
   }, [params]);
@@ -61,12 +86,13 @@ const EditUser = () => {
       username: username,
       password: password ? password : "",
       role: role,
+      group: group === '' ? null : group
     };
     try {
       const response = await fetch(
-        `http://localhost:9000/admin/update/${params.id}`,
+        `http://localhost:9000/admin/update-user/${params.id}`,
         {
-          method: "POST",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
@@ -140,6 +166,9 @@ const EditUser = () => {
         setPassword={setPassword}
         role={role}
         setRole={setRole}
+        groups={groups}
+        group ={group}
+        setGroup={setGroup}
         handleSubmit={handleSubmit}
         error={error}
       />

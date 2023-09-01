@@ -15,8 +15,8 @@ model User{
   username String @unique
   password String
   role Role @default(User)
-  groupId Int
-  group Group @relation(fields: [groupId], references: [id], onUpdate: Cascade, onDelete: Cascade) 
+  groupId Int?
+  group Group? @relation(fields: [groupId], references: [id], onUpdate: Cascade, onDelete: Cascade) 
   files File[]
 }
 

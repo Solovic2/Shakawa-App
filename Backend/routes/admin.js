@@ -5,22 +5,26 @@ const bcrypt = require("bcrypt");
 const prisma = require("../prisma/prismaClient");
 /* Users */
 router.get("/users", isAdmin, async (req, res) => {
-  const data = await prisma.user.findMany();
+  const data = await prisma.user.findMany({
+    include: {
+      group : true
+    }
+  });
   res.json(data);
 });
 router.post("/addUser", isAdmin, async (req, res) => {
   try {
-    const { username, password, role, group } = req.body;
+    const { username, password, role, group } = req.body.data;
     bcrypt.hash(password, 5, async function (err, hash) {
       try {
+        
         const addNewUser = await prisma.user.create({
           data: {
             username: username,
             password: hash,
             role: role,
-            group: {
-              connect: { id: group },
-            },
+            groupId: group !== null ? +group : null
+            
           },
           select: {
             id: true,
@@ -60,7 +64,7 @@ router.get("/edit-user/:id", isAdmin, async (req, res) => {
 router.put("/update-user/:id", isAdmin, async (req, res) => {
   try {
     const id = req.params.id;
-    const { username, password, role, group } = req.body;
+    const { username, password, role, group } = req.body.data;
     let hashPassword = password;
     if (password !== "") {
       bcrypt.hash(password, 10, async function (err, hash) {
@@ -74,9 +78,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
               username: username,
               password: hashPassword,
               role: role,
-              group: {
-                connect: { id: group },
-              },
+              groupId : group !== null ? +group : null
             },
           });
           res.json(updateUser);
@@ -87,7 +89,6 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
         console.log(`User : ${username} Updated With New Password!`);
       });
     } else {
-      const data = [username, hashPassword, role, group];
       try {
         const updateUser = await prisma.user.update({
           where: {
@@ -96,9 +97,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
           data: {
             username: username,
             role: role,
-            group: {
-              connect: { id: group },
-            },
+            groupId : group !== null ? +group : null
           },
         });
         res.json(updateUser);
@@ -132,9 +131,11 @@ router.get("/groups", isAdmin, async (req, res) => {
 });
 router.post("/addGroup", isAdmin, async (req, res) => {
   try {
-    const data = req.body;
+    const {name} = req.body.data;
     const createGroup = await prisma.group.create({
-      data: data,
+      data: {
+        name: name
+      },
     });
     res.json(createGroup);
   } catch (e) {
@@ -164,7 +165,7 @@ router.put("/update-group/:id", isAdmin, async (req, res) => {
         id: +id,
       },
       data:{
-        name: req.body.name
+        name: req.body.data.name
       }
     });
     res.json(data);
@@ -197,7 +198,7 @@ router.post("/add-new-file", async (req, res) => {
       data: {
         path: data.path,
         group: {
-          connect: { id: data.group },
+          connect: { id: +data.group },
         },
       },
     });

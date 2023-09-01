@@ -1,6 +1,7 @@
-import React from 'react'
+
 
 const AddEditForm = (props) => {
+
     return (
         <>  
             <div className='form-title'>
@@ -23,6 +24,18 @@ const AddEditForm = (props) => {
                             <option value="User">مستخدم</option>
                             <option value="Manager">مدير</option>
                             <option value="Admin">أدمن النظم</option>
+                        </select>
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="group">القسم المنتمي إليه :</label>
+                        <select id="group" value={props.group} onChange={e => props.setGroup(e.target.value)} >
+                            <option value="">-- أختر القسم --</option>
+                            {props.groups?.map((group, index)=>
+                            (
+                             <option  key={index}  value={group.id}>{group.name}</option>
+                            ))}
+
                         </select>
                     </div>
                     <button type="submit">إضافة مستخدم جديد</button>

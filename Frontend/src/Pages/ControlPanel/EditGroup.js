@@ -1,19 +1,16 @@
 import React, { useEffect, useState } from "react";
 import "./AddNewUser.css";
-import { useLocation, useNavigate } from "react-router";
-import AddEditForm from "../../Components/ControlPanel/AddEditForm";
+import { useLocation, useNavigate, useParams } from "react-router";
 import Logout from "../../Components/Login/Logout";
 import Button from "../../Components/ControlPanel/Button";
-const AddNewUser = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("User");
-  const [groups, setGroups] = useState([]);
-  const [group, setGroup] = useState("");
+import AddEditGroup from "../../Components/ControlPanel/AddEditGroup";
+const EditGroup = () => {
+  const [groupName, setGroupName] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const user = location.state?.user;
+  const params = useParams()
   useEffect(() => {
     if (!user || user.role !== "Admin") {
       // Redirect to login page if user data is not available
@@ -23,60 +20,61 @@ const AddNewUser = () => {
   }, [user, navigate]);
 
   useEffect(() => {
-    fetch("http://localhost:9000/admin/groups", {
+    fetch(`http://localhost:9000/admin/edit-group/${params.id}`, {
       credentials: "include",
     })
-      .then(async (response) => {
-        if (!response.ok) {
-          if (response.status === 401) {
-            throw new Error("You are not authenticated");
-          } else {
-            throw new Error("Error fetching data");
-          }
-        }
-
-        const data = await response.json();
-        if (data) {
-          setGroups(data);
+      .then((response) => {
+        if (response.ok) {
+          // The response status is in the 2xx range, so the request was successful
+          return response.json();
+        } else if (response.status === 401) {
+          // The user is not authenticated, display error message
+          // throw new Error('You are not authenticated');
+          throw new Error("You are not authenticated");
+        } else {
+          // The response status is not in the 2xx or 401 range, display error message
+          throw new Error("An error occurred while fetching data");
         }
       })
-      .catch((error) => {
-        console.error(error);
+      .then((data) => {
+        setGroupName(data.name)
+      })
+      .catch(async (error) => {
+        setError(error.message);
       });
-  }, []);
-  
+  }, [params]);
   if (!user || user.role !== "Admin") {
     return null;
   }
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = {
-      username: username,
-      password: password,
-      role: role,
-      group: group === '' ? null : group
+      name: groupName,
     };
     try {
-      const response = await fetch(`http://localhost:9000/admin/addUser`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ data }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.error);
-      } else {
-        navigate("/control-panel-admin/", {
-          state: { user: user },
-        });
+        const response = await fetch(
+          `http://localhost:9000/admin/update-group/${params.id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+            body: JSON.stringify({ data }),
+          }
+        );
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          setError(errorData.error);
+        } else {
+          navigate("/control-panel-admin/groups", {
+            state: { user: user },
+          });
+        }
+      } catch (error) {
+        console.error("Error deleting card:", error);
       }
-    } catch (error) {
-      console.error("Error deleting card:", error);
-    }
   };
   const handleBackToHome = () => {
     navigate("/");
@@ -124,22 +122,15 @@ const AddNewUser = () => {
         </ul>
       </div>
 
-      <AddEditForm
-        title="إضافة مستخدم جديد"
-        username={username}
-        setUsername={setUsername}
-        password={password}
-        setPassword={setPassword}
-        role={role}
-        setRole={setRole}
-        groups={groups}
-        group ={group}
-        setGroup={setGroup}
-        handleSubmit={handleSubmit}
-        error={error}
-      />
+        <AddEditGroup
+            title="تعديل قسم جديد"
+            groupName = {groupName}
+            setGroupName = {setGroupName}
+            handleSubmit={handleSubmit}
+            error={error}
+        />
     </>
   );
 };
 
-export default AddNewUser;
+export default EditGroup;

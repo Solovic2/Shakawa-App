@@ -9,6 +9,9 @@ import ControlPanel from './Pages/ControlPanel/ControlPanel';
 import AddNewUser from './Pages/ControlPanel/AddNewUser';
 import EditUser from './Pages/ControlPanel/EditUser';
 import { CookiesProvider } from 'react-cookie';
+import Groups from './Pages/ControlPanel/Groups';
+import AddGroup from './Pages/ControlPanel/AddGroup';
+import EditGroup from './Pages/ControlPanel/EditGroup';
 function App() {
 
   return (
@@ -20,6 +23,9 @@ function App() {
               <Route path="/register" element={<RegistrationForm />}/>
               <Route path="/login" element={<LoginForm />} />
               <Route path="/control-panel-admin" element={<ControlPanel />}/>
+              <Route path="/control-panel-admin/groups" element={<Groups />}/>
+              <Route path="/control-panel-admin/groups/add" element={<AddGroup />} />
+              <Route path="/control-panel-admin/groups/edit/:id" element={<EditGroup />}/>
               <Route path="/control-panel-admin/add" element={<AddNewUser />} />
               <Route path="/control-panel-admin/edit/:id" element={<EditUser />} />
               <Route path="*" element={<NoPage />} />
