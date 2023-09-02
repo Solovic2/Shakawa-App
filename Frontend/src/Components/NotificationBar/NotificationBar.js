@@ -14,18 +14,15 @@ const NotificationBar = (props) => {
       }, 2000);
       return () => clearTimeout(timeoutId);
     }
-    // else if (flag === 3) {
-    //     setShowAlert(true);
-    //     let timeoutId1 = setTimeout(() => {
-    //         setShowAlert(false);
-    //         setShowAlertAddDelete(true)
-    //         let timeoutId2 = setTimeout(() => {
-    //           setShowAlertAddDelete(false);
-    //         }, 1000);
-    //         return () => clearTimeout(timeoutId2);
-    //       }, 1000);
-    //       return () => clearTimeout(timeoutId1);
-    // }
+    else if (flag === 4) {
+      setShowAlert(false)
+      setShowAlertAddDelete(true);
+      const timeoutId = setTimeout(() => {
+        setShowAlertAddDelete(false);
+        setShowAlert(false)
+      }, 2000);
+      return () => clearTimeout(timeoutId);
+    }
   }, [flag, notifyFlag]);
 
   if (flag === 1) {
@@ -57,6 +54,17 @@ const NotificationBar = (props) => {
         {showAlert && (
             <div className="alert alert-success" role="alert">
                 تم تغيير حالة الشكوى او يوجد رد جديد 
+            </div>
+        )}
+      </>
+    );
+  }
+  else if(flag === 4) {
+    return (
+      <>
+        {showAlertAddDelete && (
+            <div className="alert alert-warning" role="alert">
+                تم إضافة فايل وتم تعديله الآن 
             </div>
         )}
       </>

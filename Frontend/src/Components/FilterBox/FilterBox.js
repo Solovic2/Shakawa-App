@@ -12,9 +12,6 @@ const FilterBox = ({user, notify}) => {
   const [eventAction, setEventAction] = useState();
   const [, , removeCookie] = useCookies(['user']);
   const [isToggled, setIsToggled] = useState(false);
-  const folderPath = process.env.FOLDER_PATH;
-
-
   useEffect(() => {
     fetch("http://localhost:9000/" , {
       credentials: 'include'
@@ -53,12 +50,11 @@ const FilterBox = ({user, notify}) => {
   
       ws.addEventListener('message', (event) => {
         const message = JSON.parse(event.data);
-        console.log(message);
         if(user.role !== "User"){
           if (message.type === 'add') {
             setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
             notify(1, prev => prev + 1)
-        
+            
           } else if (message.type === 'delete') {
               setFilterData((prevValues) => prevValues.filter(data => data.path !== message.data.path));
               notify(2, prev => prev - 1)
