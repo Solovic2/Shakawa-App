@@ -58,10 +58,7 @@
   font-weight: 600;
 }
 
-.audio-element .audio {
-  height: 75px;
-}
-
+.audio-element .audio,
 .audio-element .button {
   height: 50px;
   margin-top: 10px;
@@ -210,7 +207,7 @@
 }
 
 @media (max-width: 320px) {
-  .audio audio {
-    width: 200px;
+   audio {
+    width: 250px;
   }
 }

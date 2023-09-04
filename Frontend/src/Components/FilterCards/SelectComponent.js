@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const SelectComponent = ({ element, groups, status, onSelectChange, edit , isStatus}) => {
+const SelectComponent = ({ element, groups, status, onSelectChange, edit}) => {
   const statusOrGroups = groups ?  element.groupId !== null ? element.groupId : "" : element.info !== "" ? element.status : "";
   const [selection, setSelection] = useState(
     statusOrGroups
@@ -11,6 +11,7 @@ const SelectComponent = ({ element, groups, status, onSelectChange, edit , isSta
     setSelection(selectedValue);
     onSelectChange(selectedValue); // Call the callback function
   };
+  
   let statusValues =[]
   if(status){
     for( let i = 0 ; i < status.length ; i++){
@@ -26,6 +27,8 @@ const SelectComponent = ({ element, groups, status, onSelectChange, edit , isSta
           case "ON_SOLVE":
             // statusBadge = "badge bg-success"
             statusValues.push("تم الحل") 
+          break;
+          default: statusValues.push("لم تقرأ بعد") ;
           break;
       }
     }
@@ -44,6 +47,10 @@ const SelectComponent = ({ element, groups, status, onSelectChange, edit , isSta
       onChange={handleSelectChange}
       disabled={ disabled && (edit ? !edit : true) }
       required
+      onInvalid={
+        groups ? e => e.target.setCustomValidity('برجاء اختيار القسم') 
+        : e => e.target.setCustomValidity('برجاء اختيار حالة الطلب') 
+      }
     >
       {groups ? (
         <>
@@ -67,4 +74,4 @@ const SelectComponent = ({ element, groups, status, onSelectChange, edit , isSta
     </select>
   );
 };
-export default SelectComponent;
+export default React.memo(SelectComponent);

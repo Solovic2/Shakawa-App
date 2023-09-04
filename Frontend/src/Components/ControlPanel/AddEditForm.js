@@ -12,7 +12,7 @@ const AddEditForm = (props) => {
                 <form onSubmit={props.handleSubmit}>
                     <div className="form-group">
                         <label htmlFor="username">إسم المستخدم :</label>
-                        <input type="text" id="username" value={props.username} onChange={e => props.setUsername(e.target.value)} required />
+                        <input type="text" id="username" value={props.username} onChange={e => props.setUsername(e.target.value)} required  onInvalid={e => e.target.setCustomValidity('برجاء إدخال إسم المستخدم')}/>
                     </div>
                     <div className="form-group">
                         <label htmlFor="password">كلمة السر :</label>
@@ -20,7 +20,7 @@ const AddEditForm = (props) => {
                     </div>
                     <div className="form-group">
                         <label htmlFor="role">دور المستخدم : </label>
-                        <select id="role" value={props.role} onChange={e => props.setRole(e.target.value)} required>
+                        <select id="role" value={props.role} onChange={e => props.setRole(e.target.value)} required onInvalid={e => e.target.setCustomValidity('برجاء اختيار دور المستخدم')}>
                             <option value="User">مستخدم</option>
                             <option value="Manager">مدير</option>
                             <option value="Admin">أدمن النظم</option>
@@ -31,9 +31,9 @@ const AddEditForm = (props) => {
                         <label htmlFor="group">القسم المنتمي إليه :</label>
                         <select id="group" value={props.group} onChange={e => props.setGroup(e.target.value)} >
                             <option value="">-- أختر القسم --</option>
-                            {props.groups?.map((group, index)=>
+                            {props.groups?.map((group)=>
                             (
-                             <option  key={index}  value={group.id}>{group.name}</option>
+                             <option  key={group.id}  value={group.id}>{group.name}</option>
                             ))}
 
                         </select>

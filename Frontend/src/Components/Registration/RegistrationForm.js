@@ -107,6 +107,7 @@ function RegistrationForm() {
             <select
               onChange={(event) => setSelection(event.target.value)}
               required
+              onInvalid={e => e.target.setCustomValidity('برجاء اختيار القسم')}
             >
               {groups?.map((element) => {
                 return(
@@ -123,6 +124,7 @@ function RegistrationForm() {
               value={username}
               onChange={(event) => setUserName(event.target.value)}
               required
+              onInvalid={e => e.target.setCustomValidity('برجاء إدخال إسم المستخدم')}
             />
           </label>
 
@@ -133,12 +135,13 @@ function RegistrationForm() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
+              onInvalid={e => e.target.setCustomValidity('برجاء إدخال كلمة السر')}
             />
           </label>
 
           <button type="submit">سجل الآن!</button>
           {sameUsername && (
-            <div className="alert alert-primary pop" role="alert">
+            <div className="alert alert-danger pop" role="alert">
               هذا المستخدم موجود مسبقاً
             </div>
           )}

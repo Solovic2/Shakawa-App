@@ -29,17 +29,18 @@ function Home() {
   }, [token, navigate])
   
   // Notify when delete and added at same time 
-  useEffect(() => {
-    setPrevNotifyAddDelete(notifyAddDelete);
-  }, [notifyAddDelete]);
+  // useEffect(() => {
+  //   setPrevNotifyAddDelete(notifyAddDelete);
+  // }, [notifyAddDelete]);
 
-  useEffect(() => {
-    if (prevNotifyAddDelete === 1 && notifyAddDelete === 2) {
-      setNotifyAddDelete(4);
-      setNotifyCountFlag(prev => prev + 1)
-      setPrevNotifyAddDelete(null);
-    }
-  }, [notifyAddDelete, prevNotifyAddDelete]);
+  // useEffect(() => {
+  //   if (prevNotifyAddDelete === 1 && notifyAddDelete === 2) {
+  //     console.log("???");
+  //     setNotifyAddDelete(4);
+  //     setNotifyCountFlag(prev => prev + 1)
+  //     setPrevNotifyAddDelete(null);
+  //   }
+  // }, [notifyAddDelete, prevNotifyAddDelete]);
   const notify = (value, counterFlag) =>{
     setNotifyAddDelete(value);
     setNotifyCountFlag(counterFlag)

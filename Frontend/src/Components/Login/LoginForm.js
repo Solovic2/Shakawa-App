@@ -72,6 +72,7 @@ function LoginForm() {
               value={username}
               onChange={(event) => setUserName(event.target.value)}
               required
+              onInvalid={e => e.target.setCustomValidity('برجاء إدخال إسم المستخدم')}
             />
           </label>
           <label>
@@ -81,11 +82,12 @@ function LoginForm() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
+              onInvalid={e => e.target.setCustomValidity('برجاء إدخال كلمة السر')}
             />
           </label>
           <button type="submit">تسجيل الدخول</button>
           {error && (
-            <div className="alert alert-primary pop" role="alert">
+            <div className="alert alert-danger pop" role="alert">
               {error}
             </div>
           )}

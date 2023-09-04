@@ -1,15 +1,18 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./FilterCards.css";
-import AudioPlayer from "../Audio/AudioPlayer";
 import SelectComponent from "./SelectComponent";
+import Modal from "react-bootstrap/Modal";
+import Button from "react-bootstrap/Button";
 function FilterCards({ user, data, setFilterData, setValues, notify }) {
   const infoContainerRef = useRef(null);
-  const [playingCard, setPlayingCard] = useState(null);
   const [showForm, setShowForm] = useState({});
   const [showAttachForm, setShowAttachForm] = useState({});
   const [cardClass, setCardClass] = useState("card");
   const [groups, setGroups] = useState([]);
   const [selectedValues, setSelectedValues] = useState({});
+  const [show, setShow] = useState({});
+  const [fileContent, setFileContent] = useState();
+
   useEffect(() => {
     if (user) {
       setCardClass(
@@ -69,18 +72,23 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
       });
   }, []);
 
+  const handleClose = (path) =>
+    setShow((prev) => ({
+      ...prev,
+      [path]: false,
+    }));
+  const handleShow = (path) =>
+    setShow((prev) => ({
+      ...prev,
+      [path]: true,
+    }));
   // Show Shakwa When Press The Button
   const handleClick = async (path) => {
     fetch(`http://localhost:9000/file/${path}`, { credentials: "include" })
       .then((response) => response.text())
       .then((fileContents) => {
-        // Create popup window
-        const popupWindow = window.open(
-          "read-text-file",
-          "read-text-file",
-          "width=600,height=400,resizable=no,scrollbars=yes"
-        );
-        popupWindow.document.write(`<pre>${fileContents}</pre>`);
+        handleShow(path);
+        setFileContent(fileContents);
       });
   };
 
@@ -97,10 +105,28 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
       if (!response.ok) {
         throw new Error("Failed to hide card");
       }
+      const deleteData = await response.json();
+      if (selectedValues[path]) {
+        setSelectedValues((prevValues) => {
+          const updatedValues = { ...prevValues };
+          delete updatedValues[path];
+          return updatedValues;
+        });
+      }
       setFilterData((prevValues) =>
-        prevValues.filter((card) => card.path !== path)
+        prevValues.filter((data) => data.path !== deleteData.path)
       );
       notify(2, (prev) => prev - 1);
+      // if(deleteData){
+      //   await setValues((prevValues) =>
+      //   prevValues.filter((card) => card.path !== deleteData.path)
+      // );
+
+      // await setFilterData((prevValues) => prevValues.filter(data => data.path !== deleteData.path));
+      // notify(2, prev => prev - 1)
+      // console.log(data);
+      // }
+
       // Remove the deleted card from the state
     } catch (error) {
       console.error("Error deleting card:", error);
@@ -224,7 +250,6 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
           });
           return updatedData;
         });
-        
       } else {
         console.log("Error On submitting");
       }
@@ -238,7 +263,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
   };
   return (
     <div className="card-container hide-scrollbar">
-      {data?.map((element, index) => {
+      {data?.map((element) => {
         let audioElement = null;
         let fullPath = element.path.split("\\");
         const path = fullPath[fullPath.length - 1];
@@ -246,22 +271,51 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
           audioElement = (
             <div className="audio">
               <label className="audio-float"> :سماع الشكوى</label>
-              <AudioPlayer
-                src={`http://localhost:9000/audio/${path}`}
-                playingCard={playingCard}
-                setPlayingCard={setPlayingCard}
-              />
+              <>
+                <Button variant="primary" onClick={() => handleShow(path)}>
+                  سماع الشكوى
+                </Button>
+                <Modal style={{textAlign:"center"}} show={show[path]} onHide={() => handleClose(path)}>
+                  <Modal.Header closeButton>
+                    <Modal.Title style={{margin: "auto"}}>
+                      سماع الشكوى الخاصة بالرقم : {element.mobile}
+                    </Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body>
+                    <audio
+                      controls
+                      src={`http://localhost:9000/audio/${encodeURI(path)}`}
+                    />
+                  </Modal.Body>
+                </Modal>
+              </>
             </div>
           );
         } else {
           audioElement = (
             <div className="button">
-              <button
-                className="btn btn-primary"
-                onClick={() => handleClick(path)}
-              >
-                قراءة الشكوى
-              </button>
+              <label className="audio-float"> :قراءة الشكوى</label>
+              <>
+                <Button variant="primary" onClick={() => handleClick(path)}>
+                  قراءة الشكوى
+                </Button>
+                <Modal show={show[path]} onHide={() => handleClose(path)}>
+                  <Modal.Header closeButton>
+                    <Modal.Title style={{margin: "auto"}}>
+                      قراءة الشكوى الخاصة بالرقم : {element.mobile}
+                    </Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body style={{
+                      direction: "rtl",
+                      overflowWrap: "break-word"
+                    }}
+                  >
+                    <div >
+                      <p>{fileContent}</p>
+                    </div>
+                  </Modal.Body>
+                </Modal>
+              </>
             </div>
           );
         }
@@ -286,7 +340,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
             break;
         }
         return (
-          <div key={index} id="card" className={cardClass}>
+          <div key={element.path} id="card" className={cardClass}>
             <div className="mobile">
               <label className="card-label">
                 {element.mobile || "UnKnown"}
@@ -328,7 +382,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                   }
                 >
                   <SelectComponent
-                    key={index}
+                    key={element.path}
                     element={element}
                     groups={groups}
                     status={null}
@@ -397,10 +451,10 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                       }
                     >
                       <SelectComponent
-                        key={index}
+                        key={element.path}
                         element={element}
                         groups={null}
-                        status={["ON_SOLVE", "ON_HOLD", "ON_UNSEEN"]}
+                        status={["ON_SOLVE", "ON_HOLD"]}
                         onSelectChange={(selectedValue) =>
                           handleSelectChange(element.path, selectedValue)
                         }
@@ -414,6 +468,9 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                         placeholder="الرد"
                         defaultValue={element.info}
                         required
+                        onInvalid={(e) =>
+                          e.target.setCustomValidity("برجاء الرد على الشكوى")
+                        }
                       />
 
                       <button type="submit" className="btn btn-sm btn-success">

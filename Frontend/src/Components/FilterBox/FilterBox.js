@@ -50,12 +50,23 @@ const FilterBox = ({user, notify}) => {
   
       ws.addEventListener('message', (event) => {
         const message = JSON.parse(event.data);
+        if((message.type === 'user_changed_group'  || message.type === 'user_changed_role') &&  message.data.id === user.id ){
+          // navigate to login
+          removeCookie('user', { path: '/' });
+          navigate("/login");
+        }
         if(user.role !== "User"){
+          // if(message.type === 'user_file_delete'){
+          //   setFilterData((prevValues) => prevValues.filter(data => data.path !== message.data.path));
+          //   console.log(filterData);
+          //   notify(2, prev => prev - 1)
+          // }
+          
           if (message.type === 'add') {
             setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
             notify(1, prev => prev + 1)
             
-          } else if (message.type === 'delete') {
+          } else if (message.type === 'delete' ) {
               setFilterData((prevValues) => prevValues.filter(data => data.path !== message.data.path));
               notify(2, prev => prev - 1)
           } else if(message.type === 'statusOrReply_changed'){
@@ -74,6 +85,11 @@ const FilterBox = ({user, notify}) => {
             console.warn('Received unknown message type:', message.type);
           }
         }else{
+          if(message.type === 'user_file_delete' && message.data.groupId === user.groupId){
+            setFilterData((prevValues) => prevValues.filter(data => data.path !== message.data.path));
+            console.log(filterData);
+            notify(2, prev => prev - 1)
+          }
           if (message.type === 'delete' && message.data.groupId === user.groupId) {
             setFilterData((prevValues) => prevValues.filter(data => data.path !== message.data.path));
             notify(2, prev => prev - 1)
@@ -126,8 +142,9 @@ const FilterBox = ({user, notify}) => {
 
   return (
     <>
+      <div className='title'>{user.group ? user.group.name : "المدير"}</div>
       <FilterSearch user = {user} handleChange={handleChange} setValues={setValues} setFilterData={setFilterData} setIsToggled = {setIsToggled} isToggled ={isToggled}/>
-      <FilterCards user = {user} data={filterData} setFilterData={setFilterData} setValues={setValues} notify = {notify} />
+      <FilterCards  user = {user} data={filterData} setFilterData={setFilterData} setValues={setValues} notify = {notify} />
     </>
   )
 }

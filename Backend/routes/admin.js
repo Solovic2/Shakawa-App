@@ -2,7 +2,17 @@ const express = require("express");
 const router = express.Router();
 const { isAdmin } = require("../middleware");
 const bcrypt = require("bcrypt");
+const wss = require("../websocket");
 const prisma = require("../prisma/prismaClient");
+
+wss.on("connection", (ws) => {
+  console.log("WebSocket connected");
+});
+wss.on("error", (error) => {
+  if (error.code === "EADDRINUSE") {
+    console.log("Port in Use");
+  }
+});
 /* Users */
 router.get("/users", isAdmin, async (req, res) => {
   const data = await prisma.user.findMany({
@@ -65,6 +75,11 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
   try {
     const id = req.params.id;
     const { username, password, role, group } = req.body.data;
+    const user = await prisma.user.findUnique({
+      where: {
+        username: username,
+      },
+    });
     let hashPassword = password;
     if (password !== "") {
       bcrypt.hash(password, 10, async function (err, hash) {
@@ -81,6 +96,26 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
               groupId : group !== null ? +group : null
             },
           });
+          if(user && user.groupId !== +group ){
+            let item = {
+              type: "user_changed_group",
+              data: updateUser,
+            };
+            const message = JSON.stringify(item);
+            wss.clients.forEach((client) => {
+              client.send(message);
+            });
+          }else if(user && user.role !== role){
+            
+            let item = {
+              type: "user_changed_role",
+              data: updateUser,
+            };
+            const message = JSON.stringify(item);
+            wss.clients.forEach((client) => {
+              client.send(message);
+            });
+          }
           res.json(updateUser);
         } catch (error) {
           console.log(error);
@@ -100,6 +135,27 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
             groupId : group !== null ? +group : null
           },
         });
+        if(user.groupId !== +group ){
+          let item = {
+            type: "user_changed_group",
+            data: updateUser,
+          };
+          const message = JSON.stringify(item);
+          wss.clients.forEach((client) => {
+            client.send(message);
+          });
+        }if(user.role !== role){
+          console.log("S");
+          let item = {
+            type: "user_changed_role",
+            data: updateUser,
+          };
+          const message = JSON.stringify(item);
+          console.log(wss.clients);
+          wss.clients.forEach((client) => {
+            client.send(message);
+          });
+        }
         res.json(updateUser);
         console.log(`User : ${username} Updated With Same Password!`);
       } catch (error) {
@@ -117,6 +173,15 @@ router.delete("/delete-user/:id", isAdmin, async (req, res) => {
       where: {
         id: +req.params.id,
       },
+    });
+    let item = {
+      type: "user_changed_role",
+      data: deleteUser,
+    };
+    const message = JSON.stringify(item);
+    console.log(wss.clients);
+    wss.clients.forEach((client) => {
+      client.send(message);
     });
     res.json(deleteUser);
   } catch (error) {
@@ -159,15 +224,32 @@ router.get("/edit-group/:id", isAdmin, async (req, res) => {
 
 router.put("/update-group/:id", isAdmin, async (req, res) => {
   const id = req.params.id;
+  const name = req.body.data.name;
   try {
+    const groupName = await prisma.group.findUnique({
+      where: {
+        name: name,
+      },
+    });
     const data = await prisma.group.update({
       where: {
         id: +id,
       },
       data:{
-        name: req.body.data.name
+        name: name
       }
     });
+    if(groupName == null){
+      let item = {
+            type: "user_changed_role",
+            data: updateUser,
+          };
+          const message = JSON.stringify(item);
+          console.log(wss.clients);
+          wss.clients.forEach((client) => {
+            client.send(message);
+          });
+    }
     res.json(data);
   } catch (e) {
     if (e.code === "P2002") {
@@ -186,6 +268,15 @@ router.delete("/delete-group/:id", isAdmin, async (req, res) => {
     where: {
       id: +id,
     },
+  });
+  let item = {
+    type: "user_changed_role",
+    data: data,
+  };
+  const message = JSON.stringify(item);
+  console.log(wss.clients);
+  wss.clients.forEach((client) => {
+    client.send(message);
   });
   res.json(data);
 });

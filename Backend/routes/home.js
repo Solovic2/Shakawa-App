@@ -2,13 +2,13 @@ const express = require("express");
 const router = express.Router();
 const fs = require("fs");
 const { requireAuth } = require("../middleware");
-const WebSocket = require("ws");
+const wss = require("../websocket");
 const chokidar = require("chokidar");
 const prisma = require("../prisma/prismaClient");
 const { Role, Status } = require("@prisma/client");
 const folderPath = process.env.FOLDER_PATH;
 // WebSocket for notification
-const wss = new WebSocket.Server({ port: 9099 });
+
 wss.on("connection", (ws) => {
   console.log("WebSocket connected");
 });
@@ -127,37 +127,35 @@ async function readAllFiles(folderPath) {
     if (paths.length > 0) {
       const disabledFiles = await prisma.file.findMany({
         where: {
-          flag: 0,
           path: {
             in: paths,
           },
         },
-        include: {
-          user: true,
-        },
+        include:{
+          user: true
+        }
       });
-
       for (let i = 0; i < paths.length; i++) {
         const path = paths[i];
         const data = splitPath(path);
-        // Check if path exists in disabledFiles
-        const index = disabledFiles.findIndex((df) => df.path === path);
 
-        if (index !== -1) {
+        // Check if path exists in disabledFiles
+        const element = disabledFiles.find((df) => df.path === path);
+        if (element !== undefined && element.flag !== 1) {
           const fileData = {
             path: path,
-            info: disabledFiles[index].info,
+            info: element.info,
             mobile: data[0],
             fileDate: data[1],
             fileType: data[2],
-            repliedBy: disabledFiles[index].user
-              ? disabledFiles[index].user.username
+            repliedBy: element.user
+              ? element.user.username
               : null,
-            groupId: disabledFiles[index].groupId,
-            status: disabledFiles[index].status,
+            groupId: element.groupId,
+            status: element.status,
           };
           allFiles.push(fileData);
-        } else {
+        } else if (element === undefined) {
           const fileData = {
             path: path,
             info: "",
@@ -282,15 +280,49 @@ router.get("/file/:filePath", requireAuth, (req, res) => {
   });
 });
 
-// API For Get The Audio File
+// // API For Get The Audio File
+// router.get("/audio/:filePath", requireAuth, (req, res) => {
+//   const filePath = folderPath + "\\" + req.params.filePath;
+//   fs.readFile(filePath, (err, data) => {
+//     if (err) {
+//       res.status(404).send("File not found");
+//     } else {
+//       res.setHeader("Content-Type", "audio/wav");
+//       res.send(data);
+//     }
+//   });
+// });
 router.get("/audio/:filePath", requireAuth, (req, res) => {
   const filePath = folderPath + "\\" + req.params.filePath;
-  fs.readFile(filePath, (err, data) => {
+  fs.stat(filePath, (err, stat) => {
     if (err) {
       res.status(404).send("File not found");
     } else {
-      res.setHeader("Content-Type", "audio/mpeg");
-      res.send(data);
+      const fileSize = stat.size;
+
+      const range = req.headers.range;
+      if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+        const chunkSize = end - start + 1;
+        const file = fs.createReadStream(filePath, { start, end });
+        const head = {
+          "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+          "Accept-Ranges": "bytes",
+          "Content-Length": chunkSize,
+          "Content-Type": "audio/wav",
+        };
+        res.writeHead(206, head);
+        file.pipe(res);
+      } else {
+        const head = {
+          "Content-Length": fileSize,
+          "Content-Type": "audio/wav",
+        };
+        res.writeHead(200, head);
+        fs.createReadStream(filePath).pipe(res);
+      }
     }
   });
 });
@@ -371,7 +403,7 @@ router.put("/update-complain/:path", requireAuth, async (req, res) => {
       },
     });
     const isSameStatus = existingFile && existingFile.status === data.status;
-    const isSameReply = existingFile && existingFile.info === data.info ;
+    const isSameReply = existingFile && existingFile.info === data.info;
     const updateOrAddFile = await prisma.file.upsert({
       where: {
         path: pathParam,
@@ -390,8 +422,8 @@ router.put("/update-complain/:path", requireAuth, async (req, res) => {
         userId: +user.id,
       },
     });
-    
-    if(!isSameStatus || !isSameReply){
+
+    if (!isSameStatus || !isSameReply) {
       let item = {
         type: "statusOrReply_changed",
         data: updateOrAddFile,
@@ -424,6 +456,14 @@ router.post("/delete-complain/:path", requireAuth, async (req, res) => {
         info: "",
         flag: 1,
       },
+    });
+    let item = {
+      type: "user_file_delete",
+      data: hideFileOrAddItHidden,
+    };
+    const message = JSON.stringify(item);
+    wss.clients.forEach((client) => {
+      client.send(message);
     });
     console.log(`File: ${path} is hided Successfuly`);
     res.status(200).json(hideFileOrAddItHidden);

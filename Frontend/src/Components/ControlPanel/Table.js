@@ -43,7 +43,7 @@ const Table = (props) => {
           </thead>
 
           <tbody>
-            {props.users?.map((user, index) => {
+            {props.users?.map((user) => {
               let role = "مستخدم";
               switch (user.role) {
                 case "Admin":
@@ -57,7 +57,7 @@ const Table = (props) => {
                   break;
               }
               return (
-                <tr key={index}>
+                <tr key={user.id}>
                   <th>{user.id}</th>
                   <th>{user.username}</th>
                   <th>{role}</th>
@@ -79,9 +79,9 @@ const Table = (props) => {
                 </tr>
               );
             })}
-            {props.groups?.map((group, index) => {
+            {props.groups?.map((group) => {
               return (
-                <tr key={index}>
+                <tr key={group.id}>
                   <th>{group.id}</th>
                   <th>{group.name}</th>
                   <th>
