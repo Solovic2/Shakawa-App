@@ -116,7 +116,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
       setFilterData((prevValues) =>
         prevValues.filter((data) => data.path !== deleteData.path)
       );
-      notify(2, (prev) => prev - 1);
+      notify(5, (prev) => prev - 1);
       // if(deleteData){
       //   await setValues((prevValues) =>
       //   prevValues.filter((card) => card.path !== deleteData.path)

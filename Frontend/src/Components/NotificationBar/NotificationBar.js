@@ -7,19 +7,10 @@ const NotificationBar = (props) => {
   const flag = props.flag;
   const notifyFlag = props.notifyFlag;
   useEffect(() => {
-    if (flag !== 0 && flag !== 4) {
+    if (flag !== 0 ) {
       setShowAlert(true);
       const timeoutId = setTimeout(() => {
         setShowAlert(false);
-      }, 2000);
-      return () => clearTimeout(timeoutId);
-    }
-    else if (flag === 4) {
-      setShowAlert(false)
-      setShowAlertAddDelete(true);
-      const timeoutId = setTimeout(() => {
-        setShowAlertAddDelete(false);
-        setShowAlert(false)
       }, 2000);
       return () => clearTimeout(timeoutId);
     }
@@ -29,7 +20,7 @@ const NotificationBar = (props) => {
     return (
       <>
         {showAlert && (
-          <div className="alert alert-info"  role="alert">
+          <div className="alert alert-primary"  role="alert">
             تم إضافة شكوى جديدة الآن
           </div>
         )}
@@ -42,7 +33,7 @@ const NotificationBar = (props) => {
     return (
       <>
         {showAlert && (
-            <div className="alert alert-danger" role="alert">
+            <div className="alert alert-warning" role="alert">
                 تم حذف شكوى الآن أو  تعديل اسم الشكوى
             </div>
         )}
@@ -60,12 +51,12 @@ const NotificationBar = (props) => {
       </>
     );
   }
-  else if(flag === 4) {
+  else if(flag === 5) {
     return (
       <>
-        {showAlertAddDelete && (
-            <div className="alert alert-warning" role="alert">
-                تم إضافة فايل وتم تعديله الآن 
+        {showAlert && (
+            <div className="alert alert-danger" role="alert">
+                تم إخفاء شكوى الآن
             </div>
         )}
       </>

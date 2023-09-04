@@ -92,6 +92,7 @@ const FilterBox = ({ user, notify }) => {
           console.warn("Received unknown message type:", message.type);
         }
       } else {
+        // When File Deleted (Hided) By Manager/Admin And This file was Attached to a User
         if (
           message.type === "user_file_delete" &&
           message.data.groupId === user.groupId
@@ -99,9 +100,9 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          console.log(filterData);
-          notify(2, (prev) => prev - 1);
+          notify(5, (prev) => prev - 1);
         }
+        // When File Is Deleted From OS And this file was attached to group users it will be removed
         if (
           message.type === "delete" &&
           message.data.groupId === user.groupId
@@ -111,6 +112,7 @@ const FilterBox = ({ user, notify }) => {
           );
           notify(2, (prev) => prev - 1);
         }
+        // When File Is Attached To User It Appears Immediately to this user
         if (
           message.type === "user_add" &&
           user.groupId === message.data.groupId &&
@@ -118,7 +120,9 @@ const FilterBox = ({ user, notify }) => {
         ) {
           setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
           notify(1, (prev) => prev + 1);
-        } else if (message.type === "user_delete_add") {
+        }
+        // When Manager/Admin Changed the group of file it deleted from the group users which had this file and added this file to the new group users
+        else if (message.type === "user_delete_add") {
           if (message.data.groupId === user.groupId) {
             setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
             notify(1, (prev) => prev + 1);
@@ -129,7 +133,7 @@ const FilterBox = ({ user, notify }) => {
             setFilterData((prevValues) =>
               prevValues.filter((data) => data.path !== message.data.path)
             );
-            notify(2, (prev) => prev - 1);
+            notify(5, (prev) => prev - 1);
           }
         }
       }
