@@ -30,7 +30,7 @@ const NotificationBar = (props) => {
       <>
         {showAlert && (
           <div className="alert alert-info"  role="alert">
-            تم إضافة فايل جديد الآن
+            تم إضافة شكوى جديدة الآن
           </div>
         )}
       </>
@@ -38,11 +38,12 @@ const NotificationBar = (props) => {
   }
 
   else if (flag === 2) {
+   
     return (
       <>
         {showAlert && (
             <div className="alert alert-danger" role="alert">
-                تم حذف فايل الآن
+                تم حذف شكوى الآن أو  تعديل اسم الشكوى
             </div>
         )}
       </>

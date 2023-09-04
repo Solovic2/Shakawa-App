@@ -135,7 +135,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
             groupId : group !== null ? +group : null
           },
         });
-        if(user.groupId !== +group ){
+        if(user && user.groupId !== +group ){
           let item = {
             type: "user_changed_group",
             data: updateUser,
@@ -144,7 +144,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
           wss.clients.forEach((client) => {
             client.send(message);
           });
-        }if(user.role !== role){
+        }if(user && user.role !== role){
           console.log("S");
           let item = {
             type: "user_changed_role",
@@ -159,6 +159,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
         res.json(updateUser);
         console.log(`User : ${username} Updated With Same Password!`);
       } catch (error) {
+        console.log(error);
         res.status(400).json({ error: "هذا المستخدم موجود من قبل" });
       }
     }

@@ -25,7 +25,15 @@
 .nav-title img{
   max-width: 300px;
 }
+.header{
+  text-align: center;
+  font-size: 30px;
+  font-weight: bold;
 
+}
+.header span{
+  border-radius: 10px 0px 10px 10px;
+}
 @media (max-width: 320px) {
   .nav-title{
     width: 100px;
