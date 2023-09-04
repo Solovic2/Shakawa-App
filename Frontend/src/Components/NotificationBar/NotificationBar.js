@@ -51,6 +51,17 @@ const NotificationBar = (props) => {
       </>
     );
   }
+  else if(flag === 4) {
+    return (
+      <>
+        {showAlert && (
+            <div className="alert alert-danger" role="alert">
+                تم حذف شكوى الآن وتغييرها لقسم آخر
+            </div>
+        )}
+      </>
+    );
+  }
   else if(flag === 5) {
     return (
       <>

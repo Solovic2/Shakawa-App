@@ -20,9 +20,7 @@ router.post("/register", async (req, res) => {
             username: body.username,
             password: hash,
             role: body.role,
-            group: {
-              connect: { id: +body.group },
-            },
+            groupId: body.group !== null ? +body.group : null
           },
           select: {
             id: true,

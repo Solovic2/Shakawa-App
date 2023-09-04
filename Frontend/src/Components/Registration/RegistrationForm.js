@@ -36,10 +36,10 @@ function RegistrationForm() {
           setSelection(data[0].id + "")
         }
       })
-        .catch(error => {
-          console.error(error);
-        });
-    
+      .catch(error => {
+        console.error(error);
+      });
+  
   }, []);
 
   if (cookie.user) {

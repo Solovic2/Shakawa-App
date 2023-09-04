@@ -113,20 +113,10 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
           return updatedValues;
         });
       }
-      setFilterData((prevValues) =>
+      setValues((prevValues) =>
         prevValues.filter((data) => data.path !== deleteData.path)
       );
       notify(5, (prev) => prev - 1);
-      // if(deleteData){
-      //   await setValues((prevValues) =>
-      //   prevValues.filter((card) => card.path !== deleteData.path)
-      // );
-
-      // await setFilterData((prevValues) => prevValues.filter(data => data.path !== deleteData.path));
-      // notify(2, prev => prev - 1)
-      // console.log(data);
-      // }
-
       // Remove the deleted card from the state
     } catch (error) {
       console.error("Error deleting card:", error);
@@ -169,7 +159,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
         }
         const data = await response.json();
         if (data) {
-          setFilterData((prevData) => {
+          setValues((prevData) => {
             const updatedData = prevData.map((card) => {
               if (card.path === path) {
                 return { ...card, info: data.info, status: data.status };
@@ -235,7 +225,8 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
 
       const data = await response.json();
       if (data) {
-        setFilterData((prevData) => {
+
+        setValues((prevData) => {
           const updatedData = prevData.map((card) => {
             if (card.path === path) {
               return {

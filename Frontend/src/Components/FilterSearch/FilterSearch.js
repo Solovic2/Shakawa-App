@@ -21,7 +21,7 @@ const FilterSearch = (props) => {
       fetch(`http://localhost:9000/dateToday/${formattedDate}`, { credentials: 'include' })
         .then((response) => response.json())
         .then((data) => {
-          setFilterData(data);
+          setValues(data);
         });
     } else {
       fetch("http://localhost:9000/", {

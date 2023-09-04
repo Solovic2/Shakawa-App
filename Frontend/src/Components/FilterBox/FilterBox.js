@@ -66,15 +66,17 @@ const FilterBox = ({ user, notify }) => {
         // }
 
         if (message.type === "add") {
-          setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
+          setValues((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
           notify(1, (prev) => prev + 1);
         } else if (message.type === "delete") {
-          setFilterData((prevValues) =>
+          console.log(message.data.path);
+          setValues((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
+          console.log(filterData);
           notify(2, (prev) => prev - 1);
         } else if (message.type === "statusOrReply_changed") {
-          setFilterData((prevData) => {
+          setValues((prevData) => {
             const updatedData = prevData.map((card) => {
               if (card.path === message.data.path) {
                 return {
@@ -97,7 +99,7 @@ const FilterBox = ({ user, notify }) => {
           message.type === "user_file_delete" &&
           message.data.groupId === user.groupId
         ) {
-          setFilterData((prevValues) =>
+          setValues((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
           notify(5, (prev) => prev - 1);
@@ -107,9 +109,10 @@ const FilterBox = ({ user, notify }) => {
           message.type === "delete" &&
           message.data.groupId === user.groupId
         ) {
-          setFilterData((prevValues) =>
+          setValues((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
+          console.log(filterData);
           notify(2, (prev) => prev - 1);
         }
         // When File Is Attached To User It Appears Immediately to this user
@@ -118,22 +121,22 @@ const FilterBox = ({ user, notify }) => {
           user.groupId === message.data.groupId &&
           message.data.groupId !== message.prevGroupID
         ) {
-          setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
+          setValues((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
           notify(1, (prev) => prev + 1);
         }
         // When Manager/Admin Changed the group of file it deleted from the group users which had this file and added this file to the new group users
         else if (message.type === "user_delete_add") {
           if (message.data.groupId === user.groupId) {
-            setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
+            setValues((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
             notify(1, (prev) => prev + 1);
           } else if (
             message.prevGroupID !== null &&
             message.prevGroupID === user.groupId
           ) {
-            setFilterData((prevValues) =>
+            setValues((prevValues) =>
               prevValues.filter((data) => data.path !== message.data.path)
             );
-            notify(5, (prev) => prev - 1);
+            notify(4, (prev) => prev - 1);
           }
         }
       }
@@ -163,6 +166,7 @@ const FilterBox = ({ user, notify }) => {
     );
     setEventAction(event.target.value);
     setFilterData(filter);
+    console.log(filter);
   };
 
   return (
