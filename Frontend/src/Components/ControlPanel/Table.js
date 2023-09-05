@@ -1,5 +1,5 @@
 
-import Button from "./Button";
+import Button from "../CommonComponents/Button";
 import "./Table.css";
 const Table = (props) => {
   return (
@@ -55,6 +55,8 @@ const Table = (props) => {
                 case "User":
                   role = "مستخدم";
                   break;
+                default: role = "مستخدم";
+                break;
               }
               return (
                 <tr key={user.id}>

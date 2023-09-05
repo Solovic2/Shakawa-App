@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import "./LoginForm.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import Button from "../CommonComponents/Button";
 function LoginForm() {
   const navigate = useNavigate();
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [ cookie] = useCookies(["user"]);
+  const [cookie] = useCookies(["user"]);
   useEffect(() => {
     if (cookie.user) {
       navigate("/");
@@ -72,7 +73,9 @@ function LoginForm() {
               value={username}
               onChange={(event) => setUserName(event.target.value)}
               required
-              onInvalid={e => e.target.setCustomValidity('برجاء إدخال إسم المستخدم')}
+              onInvalid={(e) =>
+                e.target.setCustomValidity("برجاء إدخال إسم المستخدم")
+              }
             />
           </label>
           <label>
@@ -82,10 +85,12 @@ function LoginForm() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
-              onInvalid={e => e.target.setCustomValidity('برجاء إدخال كلمة السر')}
+              onInvalid={(e) =>
+                e.target.setCustomValidity("برجاء إدخال كلمة السر")
+              }
             />
           </label>
-          <button type="submit">تسجيل الدخول</button>
+          <Button type={"submit"} body={"تسجيل الدخول"} />
           {error && (
             <div className="alert alert-danger pop" role="alert">
               {error}

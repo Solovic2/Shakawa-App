@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./RegistrationForm.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
+import Button from "../CommonComponents/Button";
 
 function RegistrationForm() {
   const [username, setUserName] = useState("");
@@ -138,8 +139,7 @@ function RegistrationForm() {
               onInvalid={e => e.target.setCustomValidity('برجاء إدخال كلمة السر')}
             />
           </label>
-
-          <button type="submit">سجل الآن!</button>
+          <Button type={"submit"} body={"سجل الآن!"}/>
           {sameUsername && (
             <div className="alert alert-danger pop" role="alert">
               هذا المستخدم موجود مسبقاً

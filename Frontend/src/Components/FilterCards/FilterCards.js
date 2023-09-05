@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./FilterCards.css";
 import SelectComponent from "./SelectComponent";
-import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button";
+import ModalComponent from "./ModalComponent";
+import Button from "../CommonComponents/Button";
+
 function FilterCards({ user, data, setFilterData, setValues, notify }) {
   const infoContainerRef = useRef(null);
   const [showForm, setShowForm] = useState({});
@@ -10,8 +11,6 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
   const [cardClass, setCardClass] = useState("card");
   const [groups, setGroups] = useState([]);
   const [selectedValues, setSelectedValues] = useState({});
-  const [show, setShow] = useState({});
-  const [fileContent, setFileContent] = useState();
 
   useEffect(() => {
     if (user) {
@@ -71,26 +70,6 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
         console.error(error);
       });
   }, []);
-
-  const handleClose = (path) =>
-    setShow((prev) => ({
-      ...prev,
-      [path]: false,
-    }));
-  const handleShow = (path) =>
-    setShow((prev) => ({
-      ...prev,
-      [path]: true,
-    }));
-  // Show Shakwa When Press The Button
-  const handleClick = async (path) => {
-    fetch(`http://localhost:9000/file/${path}`, { credentials: "include" })
-      .then((response) => response.text())
-      .then((fileContents) => {
-        handleShow(path);
-        setFileContent(fileContents);
-      });
-  };
 
   // Handle Delete
   const handleDelete = async (path) => {
@@ -225,7 +204,6 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
 
       const data = await response.json();
       if (data) {
-
         setValues((prevData) => {
           const updatedData = prevData.map((card) => {
             if (card.path === path) {
@@ -255,61 +233,6 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
   return (
     <div className="card-container hide-scrollbar">
       {data?.map((element) => {
-        let audioElement = null;
-        let fullPath = element.path.split("\\");
-        const path = fullPath[fullPath.length - 1];
-        if (element.fileType === "wav") {
-          audioElement = (
-            <div className="audio">
-              <label className="audio-float"> :سماع الشكوى</label>
-              <>
-                <Button variant="primary" onClick={() => handleShow(path)}>
-                  سماع الشكوى
-                </Button>
-                <Modal style={{textAlign:"center"}} show={show[path]} onHide={() => handleClose(path)}>
-                  <Modal.Header closeButton>
-                    <Modal.Title style={{margin: "auto"}}>
-                      سماع الشكوى الخاصة بالرقم : {element.mobile}
-                    </Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>
-                    <audio
-                      controls
-                      src={`http://localhost:9000/audio/${encodeURI(path)}`}
-                    />
-                  </Modal.Body>
-                </Modal>
-              </>
-            </div>
-          );
-        } else {
-          audioElement = (
-            <div className="button">
-              <label className="audio-float"> :قراءة الشكوى</label>
-              <>
-                <Button variant="primary" onClick={() => handleClick(path)}>
-                  قراءة الشكوى
-                </Button>
-                <Modal show={show[path]} onHide={() => handleClose(path)}>
-                  <Modal.Header closeButton>
-                    <Modal.Title style={{margin: "auto"}}>
-                      قراءة الشكوى الخاصة بالرقم : {element.mobile}
-                    </Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body style={{
-                      direction: "rtl",
-                      overflowWrap: "break-word"
-                    }}
-                  >
-                    <div >
-                      <p>{fileContent}</p>
-                    </div>
-                  </Modal.Body>
-                </Modal>
-              </>
-            </div>
-          );
-        }
         let statusBadge = "badge text-bg-danger";
         let statusValue = "لم تقرأ بعد";
         switch (element.status) {
@@ -344,18 +267,26 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                 <span className="card-info"> :تاريخ الشكوى</span>
               </label>
             </div>
-            <div className="audio-element">{audioElement}</div>
+            <div className="audio-element">
+              <ModalComponent
+                isAudio={element.fileType === "wav"}
+                complainTitle={
+                  element.fileType === "wav" ? "سماع الشكوى" : "قراءة الشكوى"
+                }
+                mobileNumber={element.mobile}
+                unSplittedPath={element.path}
+              />
+            </div>
             <div className="card-status">
               <span className={statusBadge}>{statusValue}</span>
             </div>
             {user && user.role !== "User" && (
               <div className="deleteBtn">
-                <button
-                  className="btn"
-                  onClick={() => handleDelete(element.path)}
-                >
-                  <i className="fa-solid fa-trash"></i>
-                </button>
+                <Button
+                  className={"btn"}
+                  handleClick={() => handleDelete(element.path)}
+                  body={<i className="fa-solid fa-trash"></i>}
+                />
               </div>
             )}
             {user && user.role !== "User" && (
@@ -385,18 +316,19 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
 
                   {(element.groupId === null ||
                     showAttachForm[element.path]) && (
-                    <button className="btn btn-success" type="submit">
-                      تمرير الشكوى
-                    </button>
+                    <Button
+                      type={"submit"}
+                      className={"btn btn-success"}
+                      body={"تمرير الشكوى"}
+                    />
                   )}
                 </form>
                 {element.groupId !== null && (
                   <div className="edit-button">
-                    <button
-                      onClick={() => handleEditAttachShakwa(element.path)}
-                    >
-                      {showAttachForm[element.path] ? "إلغاء" : "تعديل"}
-                    </button>
+                    <Button
+                      handleClick={() => handleEditAttachShakwa(element.path)}
+                      body={showAttachForm[element.path] ? "إلغاء" : "تعديل"}
+                    />
                   </div>
                 )}
               </div>
@@ -427,9 +359,10 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
               <>
                 {element.info !== null && element.info !== "" && (
                   <div className="edit-button">
-                    <button onClick={() => handleEdit(element.path)}>
-                      {showForm[element.path] ? "إلغاء" : "تعديل"}
-                    </button>
+                    <Button
+                      handleClick={() => handleEdit(element.path)}
+                      body={showForm[element.path] ? "إلغاء" : "تعديل"}
+                    />
                   </div>
                 )}
                 {(element.info === null ||
@@ -463,10 +396,11 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                           e.target.setCustomValidity("برجاء الرد على الشكوى")
                         }
                       />
-
-                      <button type="submit" className="btn btn-sm btn-success">
-                        {showForm[element.path] ? "تعديل" : "إضافة رد"}
-                      </button>
+                      <Button
+                        type={"submit"}
+                        className={"btn btn-sm btn-success"}
+                        body={showForm[element.path] ? "تعديل" : "إضافة رد"}
+                      />
                     </form>
                   </div>
                 )}

@@ -1,0 +1,16 @@
+.complain-type{
+    height: 50px;
+    margin-top: 10px;
+}
+
+.complain-title {
+    display: block;
+    float: right;
+    font-weight: 600;
+  }
+
+@media (max-width: 320px) {
+    audio {
+     width: 250px;
+   }
+ }

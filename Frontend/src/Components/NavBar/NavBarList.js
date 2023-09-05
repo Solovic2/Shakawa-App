@@ -1,6 +1,6 @@
 import React from "react";
 import Logout from "../Login/Logout";
-import Button from "../ControlPanel/Button";
+import Button from "../CommonComponents/Button";
 import "./NavBarList.css";
 const NavBarList = ({ user, handleClick }) => {
   let userRole = "مدير";

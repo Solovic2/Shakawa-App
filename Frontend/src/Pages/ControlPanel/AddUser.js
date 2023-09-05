@@ -1,5 +1,5 @@
 import React from "react";
-import Button from "../../Components/ControlPanel/Button";
+import Button from "../../Components/CommonComponents/Button";
 import Logout from "../../Components/Login/Logout";
 
 const AddUser = (props) => {

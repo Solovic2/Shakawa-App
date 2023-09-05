@@ -1,30 +1,32 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom';
-import { useCookies } from 'react-cookie';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useCookies } from "react-cookie";
+import Button from "../CommonComponents/Button";
 const Logout = () => {
-    const [, , removeCookie] = useCookies(['user']);
-    const navigate = useNavigate();
+  const [, , removeCookie] = useCookies(["user"]);
+  const navigate = useNavigate();
 
-    
-    const handleLogout = async (event) => {
-        event.preventDefault();
-        const response = await fetch('/logout');
-        if (response.ok) {
-            removeCookie('user', { path: '/' });
-            
-            navigate('/login'); // Redirect to the login page after logging out
-        } else {
-        console.error('Error logging out:', response.statusText);
-        }
-    };
-    
-    return (
-        <div className='logout'>
-            <button className='btn btn-danger' onClick={handleLogout}>تسجيل الخروج</button>
-        </div>
-        
-    );
-    
-}
+  const handleLogout = async (event) => {
+    event.preventDefault();
+    const response = await fetch("/logout");
+    if (response.ok) {
+      removeCookie("user", { path: "/" });
 
-export default Logout
+      navigate("/login"); // Redirect to the login page after logging out
+    } else {
+      console.error("Error logging out:", response.statusText);
+    }
+  };
+
+  return (
+    <div className="logout">
+      <Button
+        className={"btn btn-danger"}
+        handleClick={handleLogout}
+        body={"تسجيل الخروج"}
+      />
+    </div>
+  );
+};
+
+export default Logout;

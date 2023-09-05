@@ -1,3 +1,4 @@
+import Button from "../CommonComponents/Button"
 
 
 const AddEditGroup = (props) => {
@@ -14,7 +15,7 @@ const AddEditGroup = (props) => {
                         <label htmlFor="username">إسم القسم :</label>
                         <input type="text" id="username" value={props.groupName} onChange={e => props.setGroupName(e.target.value)} required onInvalid={e => e.target.setCustomValidity('برجاء إدخال إسم القسم')} />
                     </div>
-                    <button type="submit">{props.title}</button>
+                    <Button type={"submit"} body={props.title} />
                     {props.error && <div className="alert alert-primary pop" role="alert">
                         {props.error}
                     </div>

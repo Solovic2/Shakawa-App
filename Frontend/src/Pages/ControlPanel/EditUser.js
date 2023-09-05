@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router";
 import { useParams } from "react-router-dom";
 import AddEditForm from "../../Components/ControlPanel/AddEditForm";
 import Logout from "../../Components/Login/Logout";
-import Button from "../../Components/ControlPanel/Button";
+import Button from "../../Components/CommonComponents/Button";
 
 const EditUser = () => {
   const [username, setUsername] = useState("");

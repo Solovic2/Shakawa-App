@@ -1,3 +1,4 @@
+import Button from "../CommonComponents/Button"
 
 
 const AddEditForm = (props) => {
@@ -38,7 +39,7 @@ const AddEditForm = (props) => {
 
                         </select>
                     </div>
-                    <button type="submit">إضافة مستخدم جديد</button>
+                    <Button type={"submit"} body={"إضافة مستخدم جديد"} />
                     {props.error && <div className="alert alert-primary pop" role="alert">
                         {props.error}
                     </div>

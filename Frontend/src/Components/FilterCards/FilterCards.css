@@ -58,18 +58,6 @@
   font-weight: 600;
 }
 
-.audio-element .audio,
-.audio-element .button {
-  height: 50px;
-  margin-top: 10px;
-}
-
-.audio-float {
-  display: block;
-  float: right;
-  font-weight: 600;
-}
-
 .reply-and-edit {
   direction: rtl;
   color: red;

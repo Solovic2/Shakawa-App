@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./AddNewUser.css";
 import { useLocation, useNavigate, useParams } from "react-router";
 import Logout from "../../Components/Login/Logout";
-import Button from "../../Components/ControlPanel/Button";
+import Button from "../../Components/CommonComponents/Button";
 import AddEditGroup from "../../Components/ControlPanel/AddEditGroup";
 const EditGroup = () => {
   const [groupName, setGroupName] = useState("");
