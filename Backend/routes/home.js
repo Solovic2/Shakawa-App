@@ -26,24 +26,27 @@ const watcher = chokidar.watch(folderPath, {
 watcher
   .on("add", async (path) => {
     console.log(`File ${path} has been added`);
-    const data = splitPath(path);
-    let item = {
-      type: "add",
-      data: {
-        path: path,
-        info: "",
-        mobile: data[0],
-        fileDate: data[1],
-        fileType: data[2],
-        repliedBy: null,
-        groupId: null,
-        status: Status.ON_UNSEEN,
-      },
-    };
-    const message = JSON.stringify(item);
-    wss.clients.forEach((client) => {
-      client.send(message);
-    });
+    if(!path.includes("tmp1")){
+      const data = splitPath(path);
+      let item = {
+        type: "add",
+        data: {
+          path: path,
+          info: "",
+          mobile: data[0],
+          fileDate: data[1],
+          fileType: data[2],
+          repliedBy: null,
+          groupId: null,
+          status: Status.ON_UNSEEN,
+        },
+      };
+      const message = JSON.stringify(item);
+      wss.clients.forEach((client) => {
+        client.send(message);
+      });
+    }
+  
   })
   .on("unlink", async (path) => {
     console.log(`File ${path} has been removed`);
@@ -56,16 +59,19 @@ watcher
       });
     } catch (error) {}
 
-    let message = {
-      type: "delete",
-      data: {
-        path: path,
-        groupId: deleteData ? deleteData.groupId : null,
-      },
-    };
-    wss.clients.forEach((client) => {
-      client.send(JSON.stringify(message));
-    });
+    if(!path.includes("tmp1")){
+      let message = {
+        type: "delete",
+        data: {
+          path: path,
+          groupId: deleteData ? deleteData.groupId : null,
+        },
+      };
+      wss.clients.forEach((client) => {
+        client.send(JSON.stringify(message));
+      });
+    }
+   
   })
   .on("error", (error) => console.log(`Watcher error: ${error}`));
 

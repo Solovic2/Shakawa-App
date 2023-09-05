@@ -33,8 +33,8 @@ const NotificationBar = (props) => {
     return (
       <>
         {showAlert && (
-            <div className="alert alert-warning" role="alert">
-                تم حذف شكوى الآن أو  تعديل اسم الشكوى
+            <div className="alert alert-danger" role="alert">
+                تم حذف شكوى الآن من الجهاز الخادم
             </div>
         )}
       </>
@@ -56,7 +56,7 @@ const NotificationBar = (props) => {
       <>
         {showAlert && (
             <div className="alert alert-danger" role="alert">
-                تم حذف شكوى الآن وتغييرها لقسم آخر
+                تم حذف شكوى الآن من هذا القسم وتغييرها لقسم آخر
             </div>
         )}
       </>
