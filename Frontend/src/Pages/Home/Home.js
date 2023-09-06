@@ -3,13 +3,12 @@ import React, { useEffect, useState } from 'react'
 import FilterBox from '../../Components/FilterBox/FilterBox';
 import NotificationBar from '../../Components/NotificationBar/NotificationBar';
 import { useNavigate } from 'react-router-dom';
-import NavBarList from '../../Components/NavBar/NavBarList';
+import NavBarList from '../../Components/CommonComponents/NavBarList';
 import Cookies from 'js-cookie';
 import jwt_decode from 'jwt-decode';
 function Home() {
   const [notifyAddDelete, setNotifyAddDelete] = useState(0);
   const [notifyCountFlag, setNotifyCountFlag] = useState(0);
-  const [prevNotifyAddDelete, setPrevNotifyAddDelete] = useState(null);
   const navigate = useNavigate();
   const token = Cookies.get('user')
   const [user, setUser] = useState(null)
@@ -28,19 +27,6 @@ function Home() {
     }
   }, [token, navigate])
   
-  // Notify when delete and added at same time 
-  // useEffect(() => {
-  //   setPrevNotifyAddDelete(notifyAddDelete);
-  // }, [notifyAddDelete]);
-
-  // useEffect(() => {
-  //   if (prevNotifyAddDelete === 1 && notifyAddDelete === 2) {
-  //     console.log("???");
-  //     setNotifyAddDelete(4);
-  //     setNotifyCountFlag(prev => prev + 1)
-  //     setPrevNotifyAddDelete(null);
-  //   }
-  // }, [notifyAddDelete, prevNotifyAddDelete]);
   const notify = (value, counterFlag) =>{
     setNotifyAddDelete(value);
     setNotifyCountFlag(counterFlag)
@@ -56,7 +42,7 @@ function Home() {
   return (
     <>
       <div className='container-body'>
-        <NavBarList user = {user} handleClick={handleClick}/>
+        <NavBarList user = {user} isHomePage={true} handleClick={handleClick}/>
         <NotificationBar flag = {notifyAddDelete} notifyFlag = {notifyCountFlag}/>
         <FilterBox user = {user} notify = {notify}/>
       </div>

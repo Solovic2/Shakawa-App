@@ -1,88 +1,10 @@
-import React, { useEffect, useState } from "react";
-import "./RegistrationForm.css";
-import { Link, useNavigate } from "react-router-dom";
-import { useCookies } from "react-cookie";
+import React from "react";
 import Button from "../CommonComponents/Button";
-
-function RegistrationForm() {
-  const [username, setUserName] = useState("");
-  const [password, setPassword] = useState("");
-  const [selection, setSelection] = useState("");
-  const [groups, setGroups] = useState([]);
-  const [sameUsername, setSameUserName] = useState(false);
-  const navigate = useNavigate();
-  const [cookie] = useCookies(["user"]);
-  useEffect(() => {
-    if (cookie.user) {
-      navigate("/");
-      return;
-    }
-  }, [cookie, navigate]);
-
-  useEffect(() => {
-    fetch("http://localhost:9000/groups", {
-        credentials: 'include'
-      }).then(async response => {
-        if (!response.ok) {
-          if (response.status === 401) {
-            throw new Error('You are not authenticated');
-          } else {
-            throw new Error('Error fetching data');
-          }
-        }
-
-        const data = await response.json();
-        if (data) {
-          setGroups(data);
-          setSelection(data[0].id + "")
-        }
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  
-  }, []);
-
-  if (cookie.user) {
-    return null;
-  }
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    // Handle registration submission here
-    const formData = {
-      username: username,
-      password: password,
-      role: "User",
-      group: selection,
-    };
-    try{
-      const response = await fetch(
-        `http://localhost:9000/registration/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({ data: formData }),
-        }
-      )
-      if (!response.ok) {
-        setSameUserName(true);
-      } else {
-        setSameUserName(false);
-        const userData = await response.json();
-        navigate("/", {
-          state: { user: userData },
-        });
-      }
-    }catch(error){
-      console.log(error);
-    }
-
-  };
+import { Link } from "react-router-dom";
+const RegistrationForm = (props) => {
   return (
     <>
+    <div className="registration-form">
       <div className="cover">
         <img
           src={process.env.PUBLIC_URL + "/banner.png"}
@@ -98,60 +20,79 @@ function RegistrationForm() {
         </div>
       </div>
       <div className="title">
-        تسجيل حساب جديد <i className="fa-solid fa-address-card"></i>
+        {props.title}
+        <i className="fa-solid fa-right-to-bracket"></i>
       </div>
-
-      <div className="register-form">
-        <form onSubmit={handleSubmit}>
+      <form  onSubmit={props.handleSubmit}>
+        {!props.isLogin && (
           <label>
             <span>اختيار قسم الموظف :</span>
             <select
-              onChange={(event) => setSelection(event.target.value)}
+              onChange={(event) => props.setSelection(event.target.value)}
               required
-              onInvalid={e => e.target.setCustomValidity('برجاء اختيار القسم')}
+              onInvalid={(e) =>
+                e.target.setCustomValidity("برجاء اختيار القسم")
+              }
             >
-              {groups?.map((element) => {
-                return(
-                   <option key={element.id} value={element.id}>{element.name}</option>
-                )
+              {props.groups?.map((element) => {
+                return (
+                  <option key={element.id} value={element.id}>
+                    {element.name}
+                  </option>
+                );
               })}
             </select>
           </label>
-          <label>
-            <span>إسم المستخدم:</span>
-
-            <input
-              type="text"
-              value={username}
-              onChange={(event) => setUserName(event.target.value)}
-              required
-              onInvalid={e => e.target.setCustomValidity('برجاء إدخال إسم المستخدم')}
-            />
-          </label>
-
-          <label>
-            <span>كلمة السر :</span>
-            <input
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-              onInvalid={e => e.target.setCustomValidity('برجاء إدخال كلمة السر')}
-            />
-          </label>
-          <Button type={"submit"} body={"سجل الآن!"}/>
-          {sameUsername && (
-            <div className="alert alert-danger pop" role="alert">
-              هذا المستخدم موجود مسبقاً
-            </div>
-          )}
-          <div>
-            هل تملك حسابًا ؟ <Link to="/login">تسجيل الدخول</Link>
+        )}
+        <label>
+          إسم المستخدم:
+          <input
+            type="text"
+            value={props.username}
+            onChange={(event) => props.setUserName(event.target.value)}
+            required
+            onInvalid={(e) =>
+              e.target.setCustomValidity("برجاء إدخال إسم المستخدم")
+            }
+          />
+        </label>
+        <label>
+          كلمة السر:
+          <input
+            type="password"
+            value={props.password}
+            onChange={(event) => props.setPassword(event.target.value)}
+            required
+            onInvalid={(e) =>
+              e.target.setCustomValidity("برجاء إدخال كلمة السر")
+            }
+          />
+        </label>
+        <Button
+          type={"submit"}
+          body={props.isLogin ? "تسجيل الدخول" : "سجل الآن!"}
+        />
+        {props.error && (
+          <div className="alert alert-danger pop" role="alert">
+            {props.error}
           </div>
-        </form>
+        )}
+        <div>
+          {!props.isLogin ? (
+            <>
+              هل تملك حسابًا ؟ <Link to="/login">تسجيل الدخول</Link>
+            </>
+          ) : (
+            <>
+              لا تملك حسابًا وتريد بعمل حساب جديد؟{" "}
+              <Link to="/register">التسجيل</Link>
+            </>
+          )}
+        </div>
+      </form>
       </div>
     </>
   );
-}
+};
 
 export default RegistrationForm;

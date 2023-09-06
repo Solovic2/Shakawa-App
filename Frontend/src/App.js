@@ -1,17 +1,17 @@
 import './App.css';
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import LoginForm from './Components/Login/LoginForm';
-import RegistrationForm from './Components/Registration/RegistrationForm';
 import Home from './Pages/Home/Home';
 import NoPage from './Pages/NoPage/NoPage';
 import ControlPanel from './Pages/ControlPanel/ControlPanel';
-import AddNewUser from './Pages/ControlPanel/AddNewUser';
-import EditUser from './Pages/ControlPanel/EditUser';
+import AddNewUser from './Pages/ControlPanel/User/AddNewUser';
+import EditUser from './Pages/ControlPanel/User/EditUser';
 import { CookiesProvider } from 'react-cookie';
-import Groups from './Pages/ControlPanel/Groups';
-import AddGroup from './Pages/ControlPanel/AddGroup';
-import EditGroup from './Pages/ControlPanel/EditGroup';
+import Groups from './Pages/ControlPanel/Group/Groups';
+import AddGroup from './Pages/ControlPanel/Group/AddGroup';
+import EditGroup from './Pages/ControlPanel/Group/EditGroup';
+import Login from './Pages/Registration/Login';
+import Register from './Pages/Registration/Register';
 function App() {
 
   return (
@@ -20,8 +20,8 @@ function App() {
           <Router>
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/register" element={<RegistrationForm />}/>
-              <Route path="/login" element={<LoginForm />} />
+              <Route path="/register" element={<Register />}/>
+              <Route path="/login" element={<Login />} />
               <Route path="/control-panel-admin" element={<ControlPanel />}/>
               <Route path="/control-panel-admin/groups" element={<Groups />}/>
               <Route path="/control-panel-admin/groups/add" element={<AddGroup />} />

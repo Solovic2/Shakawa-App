@@ -13,33 +13,32 @@
 }
 .title{
   text-align: center;
-  height: 100px;
   margin-top: 50px;
   font-size: 30px;
   font-weight: bold;
   padding: 20px;
 } 
-.register-form form{
+.registration-form form{
     display: flex;
     flex-direction: column;
     align-items: center;
     direction: rtl;
   }
-  .register-form .pop{
+  .registration-form .pop{
     margin-top:20px
   }
-  .register-form label {
+  .registration-form label {
     display: flex;
     flex-direction: column;
     margin-bottom: 20px;
     font-size: 18px;
   }
-  .register-form label span{
+  .registration-form label span{
     float: right;
     width: 125px;
     margin-top: 5px;
   }
-  .register-form input {
+  .registration-form input {
     padding: 10px;
     font-size: 16px;
     border: none;
@@ -47,7 +46,7 @@
     margin-top: 5px;
     margin-right:5px !important
   }
-  .register-form select {
+  .registration-form select {
 
     width: 200px;
     padding: 5px;
@@ -56,11 +55,11 @@
     border-radius: 5px;
   }
   
-  .register-form select:focus {
+  .registration-form select:focus {
     outline: none;
     border-color: #007bff;
   }
-  .register-form button {
+  .registration-form button {
     padding: 10px;
     font-size: 18px;
     background-color: #009578;

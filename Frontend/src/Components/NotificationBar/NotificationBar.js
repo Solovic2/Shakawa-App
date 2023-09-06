@@ -3,7 +3,6 @@ import './NotificationBar.css';
 
 const NotificationBar = (props) => {
   const [showAlert, setShowAlert] = useState(false);
-  const [showAlertAddDelete, setShowAlertAddDelete] = useState(false);
   const flag = props.flag;
   const notifyFlag = props.notifyFlag;
   useEffect(() => {

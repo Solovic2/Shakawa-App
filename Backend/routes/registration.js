@@ -48,7 +48,7 @@ router.post("/register", async (req, res) => {
           );
           res
             .status(400)
-            .json("هذا الموظف موجود مسبقاً الرجاء تغيير إسم المستخدم");
+            .json({ error:"هذا الموظف موجود مسبقاً الرجاء تغيير إسم المستخدم"});
         }
         console.log(`An Error Occur ${e}`);
       }

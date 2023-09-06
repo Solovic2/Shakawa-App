@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
-import Button from "../CommonComponents/Button";
+import Button from "../../Components/CommonComponents/Button";
 const Logout = () => {
   const [, , removeCookie] = useCookies(["user"]);
   const navigate = useNavigate();

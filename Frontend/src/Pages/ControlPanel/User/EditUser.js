@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import "./AddNewUser.css";
 import { useLocation, useNavigate } from "react-router";
 import { useParams } from "react-router-dom";
-import AddEditForm from "../../Components/ControlPanel/AddEditForm";
-import Logout from "../../Components/Login/Logout";
-import Button from "../../Components/CommonComponents/Button";
+import AddEditForm from "../../../Components/ControlPanel/AddEditForm";
+import NavBarList from "../../../Components/CommonComponents/NavBarList";
 
 const EditUser = () => {
   const [username, setUsername] = useState("");
@@ -86,7 +84,7 @@ const EditUser = () => {
       username: username,
       password: password ? password : "",
       role: role,
-      group: group === '' ? null : group
+      group: group === "" ? null : group,
     };
     try {
       const response = await fetch(
@@ -117,48 +115,22 @@ const EditUser = () => {
     navigate("/");
   };
   const handleBackToControlPanel = () => {
-    navigate('/control-panel-admin', {
-      state: { user: user }
-    })
+    navigate("/control-panel-admin", {
+      state: { user: user },
+    });
   };
   return (
     <>
-      <div className="navbar-buttons">
-        <ul className="NavList">
-          <li>
-            <Logout />
-          </li>
-          <li>
-            <Button
-              handleClick={handleBackToHome}
-              className="btn btn-primary"
-              body="العودة للصفحة الرئيسية"
-            />
-          </li>
-          <li>
-            <Button
-              handleClick={handleBackToControlPanel}
-              className="btn btn-primary"
-              body="العودة للوحة التحكم"
-            />
-          </li>
-          <li className="nav-title">
-            <img
-              src={process.env.PUBLIC_URL + "/title.png"}
-              className="img-responsive"
-              alt="title"
-            />
-          </li>
-          <li className="logo">
-            <img
-              src={process.env.PUBLIC_URL + "/logo.png"}
-              className="img-responsive"
-              alt="logo"
-            />
-          </li>
-        </ul>
-      </div>
+      <NavBarList
+        user={user}
+        isAddEdit={true}
+        isHomePage={false}
+        handleBack={handleBackToHome}
+        handleBackToControlPanel={handleBackToControlPanel}
+      />
+
       <AddEditForm
+        isUser={true}
         title={username + " تعديل بيانات المستخدم"}
         username={username}
         setUsername={setUsername}
@@ -167,12 +139,11 @@ const EditUser = () => {
         role={role}
         setRole={setRole}
         groups={groups}
-        group ={group}
+        group={group}
         setGroup={setGroup}
         handleSubmit={handleSubmit}
         error={error}
       />
-
     </>
   );
 };

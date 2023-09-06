@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react'
 import "./ControlPanel.css"
 import { useNavigate } from 'react-router-dom';
 import Table from '../../Components/ControlPanel/Table';
-import AddUser from './AddUser';
 import AdminPanel from '../../Components/ControlPanel/AdminPanel';
 import Cookies from 'js-cookie';
 import jwt_decode from 'jwt-decode';
+import NavBarList from '../../Components/CommonComponents/NavBarList';
 const ControlPanel = () => {
   const [users, setUsers] = useState([])
   const [user, setUser] = useState(null)
@@ -100,7 +100,7 @@ useEffect(() => {
       <div className='container-body'>
 
         <AdminPanel>
-          <AddUser users={users} handleBack = {handleBack} handleClick = {handleClick} />
+          <NavBarList user={user} users={users} isHomePage={false} handleBack = {handleBack} handleClick = {handleClick} />
           <Table users={users} groups={null}  handleClick = {handleClick} handleEdit={handleEdit} handleDelete={handleDelete} />
         </AdminPanel>
       </div>
