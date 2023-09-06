@@ -12,8 +12,8 @@ There are a websocket to maintain real time notifications between backend and fr
 - Websocket
 
 > [!IMPORTANT]
-> Before running the project make sure to replace all (128.36.1.71) to localhost or with your url.
-> Make sure to edit the .env file with the path of the folder containing the files
+>1. Before running the project make sure to replace all (128.36.1.71) to localhost or with your url.
+>2. Make sure to edit the .env file with the path of the folder containing the files
 
 ## To Run This Project
 1. First Go to your database and create a schema and put its username and password and url into .env file in Backend Directory Then Run :
