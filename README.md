@@ -11,6 +11,9 @@ There are a websocket to maintain real time notifications between backend and fr
 * Prisma
 - Websocket
 
+> [!NOTE]
+> Before running the project make sure to replace all (128.36.1.71) to localhost or with your url.
+
 ## To Run This Project
 1. First Go to your database and create a schema and put its username and password and url into .env file in Backend Directory Then Run :
      ```
