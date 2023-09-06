@@ -8,7 +8,7 @@ const NoPage = () => {
         <div className="container">
           <div className="grid-row">
             <div className="colmun colmun-left">
-              <img src="image-left.png" alt="image-left" />
+              <img src="image-left.png" alt="leftImage" />
               <h1 className="px-spc-b-20">لا توجد صفحة بهذا الإسم</h1>
               <span className="px-spc-b-20">
                 هذه الصفحة لا توجد او تم حذفها
@@ -28,7 +28,7 @@ const NoPage = () => {
               </button>
             </div>
             <div className="colmun colmun-right">
-              <img src="right-shape.png" alt="right-shape" />
+              <img src="right-shape.png" alt="rightImage" />
             </div>
           </div>
         </div>
