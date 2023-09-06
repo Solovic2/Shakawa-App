@@ -20,7 +20,7 @@ const Register = () => {
   }, [cookie, navigate]);
 
   useEffect(() => {
-    fetch("http://128.36.1.71:9000/groups", {
+    fetch("http://localhost:9000/groups", {
       credentials: "include",
     })
       .then(async (response) => {
@@ -57,7 +57,7 @@ const Register = () => {
     };
     try {
       const response = await fetch(
-        `http://128.36.1.71:9000/registration/register`,
+        `http://localhost:9000/registration/register`,
         {
           method: "POST",
           headers: {

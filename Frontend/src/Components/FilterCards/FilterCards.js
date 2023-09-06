@@ -49,7 +49,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
   }, []);
 
   useEffect(() => {
-    fetch("http://128.36.1.71:9000/groups", {
+    fetch("http://localhost:9000/groups", {
       credentials: "include",
     })
       .then(async (response) => {
@@ -75,7 +75,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
   const handleDelete = async (path) => {
     try {
       const response = await fetch(
-        `http://128.36.1.71:9000/delete-complain/${encodeURI(path)}`,
+        `http://localhost:9000/delete-complain/${encodeURI(path)}`,
         {
           method: "POST",
           credentials: "include",
@@ -122,7 +122,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
       };
       try {
         const response = await fetch(
-          `http://128.36.1.71:9000/update-complain/${encodeURI(path)}`,
+          `http://localhost:9000/update-complain/${encodeURI(path)}`,
           {
             method: "PUT",
             headers: {
@@ -184,7 +184,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
     };
     try {
       const response = await fetch(
-        "http://128.36.1.71:9000/attach-file-to-group",
+        "http://localhost:9000/attach-file-to-group",
         {
           method: "POST",
           headers: {

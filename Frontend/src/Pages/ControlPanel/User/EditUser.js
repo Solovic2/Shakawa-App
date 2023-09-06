@@ -25,7 +25,7 @@ const EditUser = () => {
   }, [user, navigate]);
 
   useEffect(() => {
-    fetch("http://128.36.1.71:9000/admin/groups", {
+    fetch("http://localhost:9000/admin/groups", {
       credentials: "include",
     })
       .then(async (response) => {
@@ -48,7 +48,7 @@ const EditUser = () => {
   }, []);
 
   useEffect(() => {
-    fetch(`http://128.36.1.71:9000/admin/edit-user/${params.id}`, {
+    fetch(`http://localhost:9000/admin/edit-user/${params.id}`, {
       credentials: "include",
     })
       .then((response) => {
@@ -88,7 +88,7 @@ const EditUser = () => {
     };
     try {
       const response = await fetch(
-        `http://128.36.1.71:9000/admin/update-user/${params.id}`,
+        `http://localhost:9000/admin/update-user/${params.id}`,
         {
           method: "PUT",
           headers: {

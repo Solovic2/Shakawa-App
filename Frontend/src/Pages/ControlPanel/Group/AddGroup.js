@@ -25,7 +25,7 @@ const AddGroup = () => {
       name: groupName,
     };
     try {
-      const response = await fetch(`http://128.36.1.71:9000/admin/addGroup`, {
+      const response = await fetch(`http://localhost:9000/admin/addGroup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

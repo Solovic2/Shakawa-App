@@ -13,7 +13,7 @@ const FilterBox = ({ user, notify }) => {
   const [, , removeCookie] = useCookies(["user"]);
   const [isToggled, setIsToggled] = useState(false);
   useEffect(() => {
-    fetch("http://128.36.1.71:9000/", {
+    fetch("http://localhost:9000/", {
       credentials: "include",
     })
       .then(async (response) => {
@@ -41,7 +41,7 @@ const FilterBox = ({ user, notify }) => {
   }, []);
   // Get Data From Database And Use WebSocket To Listen When File Added Or Deleted
   useEffect(() => {
-    const ws = new WebSocket("ws://128.36.1.71:9099");
+    const ws = new WebSocket("ws://localhost:9099");
 
     ws.addEventListener("open", () => {
       console.log("WebSocket connection opened");
@@ -59,12 +59,6 @@ const FilterBox = ({ user, notify }) => {
         navigate("/login");
       }
       if (user.role !== "User") {
-        // if(message.type === 'user_file_delete'){
-        //   setFilterData((prevValues) => prevValues.filter(data => data.path !== message.data.path));
-        //   console.log(filterData);
-        //   notify(2, prev => prev - 1)
-        // }
-
         if (message.type === "add") {
           setValues((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
           notify(1, (prev) => prev + 1);
