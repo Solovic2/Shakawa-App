@@ -36,7 +36,7 @@ useEffect(() => {
 }, [user, navigate]);
   useEffect(() => {
 
-    fetch("http://localhost:9000/admin/groups", {
+    fetch("http://128.36.1.71:9000/admin/groups", {
       credentials: 'include'
     }).then(response => {
       if (response.ok) {
@@ -70,7 +70,7 @@ useEffect(() => {
   const handleDelete = async (id) => {
     try {
       const response = await fetch(
-        "http://localhost:9000/admin/delete-group/" + id,
+        "http://128.36.1.71:9000/admin/delete-group/" + id,
         {
           method: "DELETE",
           credentials: 'include',

@@ -21,7 +21,7 @@ const AddNewUser = () => {
   }, [user, navigate]);
 
   useEffect(() => {
-    fetch("http://localhost:9000/admin/groups", {
+    fetch("http://128.36.1.71:9000/admin/groups", {
       credentials: "include",
     })
       .then(async (response) => {
@@ -55,7 +55,7 @@ const AddNewUser = () => {
       group: group === "" ? null : group,
     };
     try {
-      const response = await fetch(`http://localhost:9000/admin/addUser`, {
+      const response = await fetch(`http://128.36.1.71:9000/admin/addUser`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

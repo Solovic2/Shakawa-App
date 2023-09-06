@@ -18,7 +18,7 @@ const ModalComponent = ({ isAudio, complainTitle, mobileNumber, unSplittedPath }
     }));
   // Show Shakwa When Press The Button
   const handleClick = async (path) => {
-    fetch(`http://localhost:9000/file/${path}`, { credentials: "include" })
+    fetch(`http://128.36.1.71:9000/file/${path}`, { credentials: "include" })
       .then((response) => response.text())
       .then((fileContents) => {
         handleShow(path);
@@ -53,7 +53,7 @@ const ModalComponent = ({ isAudio, complainTitle, mobileNumber, unSplittedPath }
               {isAudio ? (
                 <audio
                   controls
-                  src={`http://localhost:9000/audio/${encodeURI(path)}`}
+                  src={`http://128.36.1.71:9000/audio/${encodeURI(path)}`}
                 />
               ) : (
                 <div>

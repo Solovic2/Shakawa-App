@@ -26,7 +26,7 @@ const Login = () => {
         username: username,
         password: password,
       };
-      const response = await fetch(`http://localhost:9000/registration/login`, {
+      const response = await fetch(`http://128.36.1.71:9000/registration/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
