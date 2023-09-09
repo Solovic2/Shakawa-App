@@ -18,7 +18,7 @@ const EditGroup = () => {
   }, [user, navigate]);
 
   useEffect(() => {
-    fetch(`http://128.36.1.71:9000/admin/edit-group/${params.id}`, {
+    fetch(`http://localhost:9000/admin/edit-group/${params.id}`, {
       credentials: "include",
     })
       .then((response) => {
@@ -51,7 +51,7 @@ const EditGroup = () => {
     };
     try {
       const response = await fetch(
-        `http://128.36.1.71:9000/admin/update-group/${params.id}`,
+        `http://localhost:9000/admin/update-group/${params.id}`,
         {
           method: "PUT",
           headers: {

@@ -18,7 +18,7 @@ const FilterSearch = (props) => {
       const year = currentDate.getFullYear();
       const formattedDate = `${day}-${month}-${year}`;
 
-      fetch(`http://128.36.1.71:9000/dateToday/${formattedDate}`, {
+      fetch(`http://localhost:9000/dateToday/${formattedDate}`, {
         credentials: "include",
       })
         .then((response) => response.json())
@@ -26,7 +26,7 @@ const FilterSearch = (props) => {
           setValues(data);
         });
     } else {
-      fetch("http://128.36.1.71:9000/", {
+      fetch("http://localhost:9000/", {
         credentials: "include",
       })
         .then(async (response) => {

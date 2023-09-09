@@ -36,7 +36,7 @@ useEffect(() => {
 }, [user, navigate]);
   useEffect(() => {
 
-    fetch("http://128.36.1.71:9000/admin/users", {
+    fetch("http://localhost:9000/admin/users", {
       credentials: 'include'
     }).then(response => {
       if (response.ok) {
@@ -70,7 +70,7 @@ useEffect(() => {
   const handleDelete = async (id) => {
     try {
       const response = await fetch(
-        "http://128.36.1.71:9000/admin/delete-user/" + id,
+        "http://localhost:9000/admin/delete-user/" + id,
         {
           method: "DELETE",
           credentials: 'include',
