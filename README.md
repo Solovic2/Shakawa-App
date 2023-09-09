@@ -40,4 +40,4 @@ There are a websocket to maintain real time notifications between backend and fr
     npm install
     npm start
     ```
-3. Then login with `username : admin` and `password: admin` and you have successfully run this project!.
+3. Then log in with `username: admin` and `password: admin` and this project will run successfully!.
