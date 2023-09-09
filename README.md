@@ -11,22 +11,33 @@ There are a websocket to maintain real time notifications between backend and fr
 * Prisma
 - Websocket
 
-> [!IMPORTANT]
-> Before running the project make sure to replace all (128.36.1.71) to localhost or with your url.\
-> Make sure to edit the .env file with the path of the folder containing the files.
+## Configurations
+1. Before running the project make sure to replace all localhost with your url.
+2. Make sure to edit the **.env** file in backend with the path of the folder containing the files :\
+      ` FOLDER_PATH = "/path/to/folder/which/have/files" `
+3. Go to your database (postgresql, mysql, mongodb) and create a schema and put its username and password and url into .env file in Backend Directory :
+     `DATABASE_URL="mysql://username:password@localhost:port/schemaName`
 
+   > [!NOTE]
+     > Make sure your provider in schema.prisma file is the same as what is written in `DATABASE_URL` :
+      ```
+      datasource db {
+            provider = "mysql"
+            url      = env("DATABASE_URL")
+      }     
+      ```
 ## To Run This Project
-1. First Go to your database and create a schema and put its username and password and url into .env file in Backend Directory Then Run :
-     ```
+1. Go To Backend Directory then run:
+    ```
+      npm install
       npx prisma generate
       npx prisma migrate dev
-    ```
-2. Then Run :
-   -  Go To Backend Directory then run:
-    ```
+      node prisma/seed.js
       npm start
     ```
-   - Go To Frontend Directory then run:
+2. Go To Frontend Directory then run:
     ```
+    npm install
     npm start
     ```
+3. Then log in with `username: admin` and `password: admin` and this project will run successfully!.
