@@ -11,7 +11,7 @@ There are a websocket to maintain real time notifications between backend and fr
 * Prisma
 - Websocket
 
-## Configuration
+## Configurations
 1. Before running the project make sure to replace all localhost with your url.
 2. Make sure to edit the **.env** file in backend with the path of the folder containing the files :\
       ` FOLDER_PATH = "/path/to/folder/which/have/files" `
