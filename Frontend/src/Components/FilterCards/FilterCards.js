@@ -269,9 +269,9 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
             </div>
             <div className="audio-element">
               <ModalComponent
-                isAudio={element.fileType === "wav"}
+                isAudio={element.fileType !== "txt"}
                 complainTitle={
-                  element.fileType === "wav" ? "سماع الشكوى" : "قراءة الشكوى"
+                  element.fileType === "txt" ? "قراءة الشكوى" : "سماع الشكوى"
                 }
                 mobileNumber={element.mobile}
                 unSplittedPath={element.path}

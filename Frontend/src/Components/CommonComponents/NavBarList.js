@@ -104,7 +104,7 @@ const NavBarList = ({
         </li>
         <li className="logo">
           <img
-            src={process.env.PUBLIC_URL + "/logo.png"}
+            src={process.env.PUBLIC_URL + "/logo192.png"}
             className="img-responsive"
             alt="logo"
           />

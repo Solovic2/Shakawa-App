@@ -317,14 +317,14 @@ router.get("/audio/:filePath", requireAuth, (req, res) => {
           "Content-Range": `bytes ${start}-${end}/${fileSize}`,
           "Accept-Ranges": "bytes",
           "Content-Length": chunkSize,
-          "Content-Type": "audio/wav",
+          "Content-Type": "audio/*",
         };
         res.writeHead(206, head);
         file.pipe(res);
       } else {
         const head = {
           "Content-Length": fileSize,
-          "Content-Type": "audio/wav",
+          "Content-Type": "audio/*",
         };
         res.writeHead(200, head);
         fs.createReadStream(filePath).pipe(res);

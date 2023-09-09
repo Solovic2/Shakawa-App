@@ -11,13 +11,13 @@ const RegistrationForm = (props) => {
           className="img-responsive "
           alt="banner"
         />
-        <div>
+        {/* <div>
           <img
             src={process.env.PUBLIC_URL + "/title.png"}
             className="banner-title img-responsive "
             alt="title"
           />
-        </div>
+        </div> */}
       </div>
       <div className="title">
         {props.title}

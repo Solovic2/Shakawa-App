@@ -5,6 +5,7 @@
   direction: rtl;
 }
 .cover img{
+  border-radius: 50px;
   height: 100%;
   text-align: center;
 }
