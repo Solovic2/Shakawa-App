@@ -24,7 +24,7 @@ There are a websocket to maintain real time notifications between backend and fr
       datasource db {
             provider = "mysql"
             url      = env("DATABASE_URL")
-          }     
+      }     
       ```
 ## To Run This Project
 1. Go To Backend Directory then run:
