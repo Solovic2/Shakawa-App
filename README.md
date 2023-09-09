@@ -16,7 +16,7 @@ There are a websocket to maintain real time notifications between backend and fr
 2. Make sure to edit the **.env** file in backend with the path of the folder containing the files :\
       ` FOLDER_PATH = "/path/to/folder/which/have/files" `
 3. Go to your database (postgresql, mysql, mongodb) and create a schema and put its username and password and url into .env file in Backend Directory :
-     `DATABASE_URL="mysql://username:password@localhost:port/schemaName`
+     `DATABASE_URL="mysql://username:password@localhost:port/schemaName`\
      > [!NOTE]
      > Make sure your provider in schema.prisma file is the same as what is written in `DATABASE_URL` :
       ```
