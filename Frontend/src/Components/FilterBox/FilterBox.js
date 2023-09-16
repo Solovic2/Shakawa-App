@@ -50,9 +50,10 @@ const FilterBox = ({ user, notify }) => {
     ws.addEventListener("message", (event) => {
       const message = JSON.parse(event.data);
       if (
-        (message.type === "user_changed_group" ||
+        (message.type === "user_changed_group" || 
+          message.type === "user_changed_username_password" || 
           message.type === "user_changed_role") &&
-        message.data.id === user.id
+          message.data.id === user.id || (message.type === "user_changed_group" && (message.data.id === user.groupId))
       ) {
         // navigate to login
         removeCookie("user", { path: "/" });
