@@ -6,6 +6,7 @@ import NavBarList from "../../../Components/CommonComponents/NavBarList";
 
 const EditUser = () => {
   const [username, setUsername] = useState("");
+  const [oldUsername, setOldUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("User");
   const [groups, setGroups] = useState([]);
@@ -66,6 +67,7 @@ const EditUser = () => {
       })
       .then((data) => {
         setUsername(data.username || "");
+        setOldUsername(data.username || "")
         setPassword("");
         setRole(data.role || "User");
         setGroup(data.groupId || "");
@@ -81,6 +83,7 @@ const EditUser = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const data = {
+      oldUsername: oldUsername,
       username: username,
       password: password ? password : "",
       role: role,
