@@ -75,7 +75,6 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
   try {
     const id = req.params.id;
     const { oldUsername, username, password, role, group } = req.body.data;
-    const { username, password, role, group } = req.body.data;
     const user = await prisma.user.findUnique({
       where: {
        username: oldUsername,
