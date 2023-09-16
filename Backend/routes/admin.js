@@ -74,10 +74,11 @@ router.get("/edit-user/:id", isAdmin, async (req, res) => {
 router.put("/update-user/:id", isAdmin, async (req, res) => {
   try {
     const id = req.params.id;
+    const { oldUsername, username, password, role, group } = req.body.data;
     const { username, password, role, group } = req.body.data;
     const user = await prisma.user.findUnique({
       where: {
-        username: username,
+       username: oldUsername,
       },
     });
     let hashPassword = password;
@@ -96,6 +97,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
               groupId : group !== null ? +group : null
             },
           });
+          const match = await bcrypt.compare(updateUser.password, user.password);
           if(user && user.groupId !== +group ){
             let item = {
               type: "user_changed_group",
@@ -109,6 +111,15 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
             
             let item = {
               type: "user_changed_role",
+              data: updateUser,
+            };
+            const message = JSON.stringify(item);
+            wss.clients.forEach((client) => {
+              client.send(message);
+            });
+          }else if(user && user.username !== updateUser.username || !match){
+            let item = {
+              type: "user_changed_username_password",
               data: updateUser,
             };
             const message = JSON.stringify(item);
@@ -152,6 +163,15 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
           };
           const message = JSON.stringify(item);
           console.log(wss.clients);
+          wss.clients.forEach((client) => {
+            client.send(message);
+          });
+        }else if(user && user.username !== updateUser.username){
+          let item = {
+            type: "user_changed_username_password",
+            data: updateUser,
+          };
+          const message = JSON.stringify(item);
           wss.clients.forEach((client) => {
             client.send(message);
           });
@@ -242,8 +262,8 @@ router.put("/update-group/:id", isAdmin, async (req, res) => {
     });
     if(groupName == null){
       let item = {
-            type: "user_changed_role",
-            data: updateUser,
+            type: "user_changed_group",
+            data: data,
           };
           const message = JSON.stringify(item);
           console.log(wss.clients);
@@ -271,7 +291,7 @@ router.delete("/delete-group/:id", isAdmin, async (req, res) => {
     },
   });
   let item = {
-    type: "user_changed_role",
+    type: "user_changed_group",
     data: data,
   };
   const message = JSON.stringify(item);
