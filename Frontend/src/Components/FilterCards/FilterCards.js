@@ -3,11 +3,14 @@ import "./FilterCards.css";
 import SelectComponent from "./SelectComponent";
 import ModalComponent from "./ModalComponent";
 import Button from "../CommonComponents/Button";
+import Modal from "react-bootstrap/Modal";
+import "./ModalComponent.css";
 
 function FilterCards({ user, data, setFilterData, setValues, notify }) {
   const infoContainerRef = useRef(null);
   const [showForm, setShowForm] = useState({});
   const [showAttachForm, setShowAttachForm] = useState({});
+  const [showModal, setShowModal] = useState({});
   const [cardClass, setCardClass] = useState("card");
   const [groups, setGroups] = useState([]);
   const [selectedValues, setSelectedValues] = useState({});
@@ -71,6 +74,16 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
       });
   }, []);
 
+  const handleClose = (path) =>
+    setShowModal((prev) => ({
+      ...prev,
+      [path]: false,
+    }));
+  const handleShow = (path) =>
+    setShowModal((prev) => ({
+      ...prev,
+      [path]: true,
+    }));
   // Handle Delete
   const handleDelete = async (path) => {
     try {
@@ -92,6 +105,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
           return updatedValues;
         });
       }
+      handleClose(path);
       setValues((prevValues) =>
         prevValues.filter((data) => data.path !== deleteData.path)
       );
@@ -242,11 +256,11 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
             break;
           case "ON_HOLD":
             statusBadge = "badge text-bg-warning";
-            statusValue = "قيد الإنتظار";
+            statusValue = "جاري الدراسة";
             break;
           case "ON_SOLVE":
             statusBadge = "badge bg-success";
-            statusValue = "تم الحل";
+            statusValue = "تم الحل والتواصل";
             break;
 
           default:
@@ -284,9 +298,34 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
               <div className="deleteBtn">
                 <Button
                   className={"btn"}
-                  handleClick={() => handleDelete(element.path)}
+                  handleClick={() => handleShow(element.path)}
                   body={<i className="fa-solid fa-trash"></i>}
                 />
+                <Modal
+                  backdrop="static"
+                  keyboard={false}
+                  show={showModal[element.path]}
+                  onHide={() => handleClose(element.path)}
+                >
+                  <Modal.Header style={{ textAlign: "center" }} closeButton>
+                    <Modal.Title style={{ width:"100%", textAlign: "center"}}>  إخفاء الشكوى الخاصة بالرقم {element.mobile}</Modal.Title>
+                  </Modal.Header>
+                  <Modal.Body style={{ direction: "rtl"}}>
+                    لا يمكنك إعادة هذه الشكوى بعد إخفائها إلا بعد الرجوع للنظم هل أنت متأكد من انك تريد إخفاء الشكوى ؟
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button
+                      className={"btn btn-secondary"}
+                      handleClick={() => handleClose(element.path)}
+                      body={"لا"}
+                    />
+                    <Button
+                      className={"btn btn-danger"}
+                      handleClick={() => handleDelete(element.path)}
+                      body={"نعم"}
+                    />
+                  </Modal.Footer>
+                </Modal>
               </div>
             )}
             {user && user.role !== "User" && (

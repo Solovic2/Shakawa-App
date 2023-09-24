@@ -65,7 +65,7 @@ const AddEditForm = (props) => {
                   ))}
                 </select>
               </div>
-              <Button type={"submit"} body={"إضافة مستخدم جديد"} />
+              <Button type={"submit"} body={props.title} />
               {props.error && (
                 <div className="alert alert-primary pop" role="alert">
                   {props.error}

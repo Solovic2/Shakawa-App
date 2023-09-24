@@ -22,11 +22,11 @@ const SelectComponent = ({ element, groups, status, onSelectChange, edit}) => {
           break;
           case "ON_HOLD":
             // statusBadge = "badge text-bg-warning"
-            statusValues.push("قيد الإنتظار")  
+            statusValues.push("جاري الدراسة")  
           break;
           case "ON_SOLVE":
             // statusBadge = "badge bg-success"
-            statusValues.push("تم الحل") 
+            statusValues.push("تم الحل والتواصل") 
           break;
           default: statusValues.push("لم تقرأ بعد") ;
           break;

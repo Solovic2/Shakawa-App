@@ -19,7 +19,7 @@ async function main() {
   await prisma.group.createMany({
     data: [
       {
-        name: "قسم الشكاوى",
+        name: "قسم الإشتراكات",
       },
       {
         name: "قسم الإسكان",
