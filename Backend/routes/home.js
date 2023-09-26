@@ -6,7 +6,7 @@ const wss = require("../websocket");
 const chokidar = require("chokidar");
 const prisma = require("../prisma/prismaClient");
 const { Role, Status } = require("@prisma/client");
-const folderPath = process.env.FOLDER_PATH;
+const folderPath = [process.env.FOLDER_VOICE_PATH, process.env.FOLDER_IMAGES_PATH];
 // WebSocket for notification
 
 wss.on("connection", (ws) => {
@@ -18,7 +18,7 @@ wss.on("error", (error) => {
   }
 });
 // Watching Files
-const watcher = chokidar.watch(folderPath, {
+const watcher = chokidar.watch([folderPath] , {
   persistent: true,
   ignoreInitial: true,
   usePolling: true,
@@ -94,16 +94,18 @@ const splitPath = (element) => {
 };
 
 // Get Files With Last Modified
-function getSortedFilesByLastModifiedTime(directoryPath) {
-  const files = fs.readdirSync(directoryPath);
+function getSortedFilesByLastModifiedTime(directoryPaths) {
+  const voices = fs.readdirSync(directoryPaths[0]);
+  const images = fs.readdirSync(directoryPaths[1]);
+  const files = voices.concat(images)
 
-  // Create an array to store file information
+  // // Create an array to store file information
   const fileDetails = [];
 
-  // Iterate through the files
+  // // Iterate through the files
   files.forEach((file) => {
     // Get the file path
-    const filePath = `${directoryPath}\\${file}`;
+    const filePath = `${file.includes("wav"| "txt") ? directoryPaths[0] : directoryPaths[1] }\\${file}`;
 
     // Get the file stats
     const stats = fs.statSync(filePath);
@@ -118,7 +120,6 @@ function getSortedFilesByLastModifiedTime(directoryPath) {
 
   // Sort files by last modified date in descending order
   fileDetails.sort((a, b) => b.lastModified - a.lastModified);
-
   return fileDetails;
 }
 // Read And Put Into Database
@@ -235,7 +236,7 @@ router.get("/", requireAuth, async (req, res) => {
     const files = await getSpecifiedFiles(user);
     res.json(files);
   } else {
-    fs.access(folderPath, fs.constants.F_OK, async (err) => {
+    fs.access(folderPath[0], fs.constants.F_OK, async (err) => {
       if (err) {
         res.status(400).json("تأكد من اتصالك بفولدر الصوتيات من عند الخادم");
         return;
@@ -274,7 +275,7 @@ router.get("/dateToday/:date", requireAuth, async (req, res) => {
 
 // API For Get The File Text
 router.get("/file/:filePath", requireAuth, (req, res) => {
-  const filePath = folderPath + "\\" + req.params.filePath;
+  const filePath = folderPath[1] + "\\" + req.params.filePath;
   fs.readFile(filePath, (err, data) => {
     if (err) {
       res.status(404).send("File not found");
@@ -299,7 +300,7 @@ router.get("/file/:filePath", requireAuth, (req, res) => {
 //   });
 // });
 router.get("/audio/:filePath", requireAuth, (req, res) => {
-  const filePath = folderPath + "\\" + req.params.filePath;
+  const filePath = folderPath[0] + "\\" + req.params.filePath;
   fs.stat(filePath, (err, stat) => {
     if (err) {
       res.status(404).send("File not found");
