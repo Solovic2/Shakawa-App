@@ -13,9 +13,9 @@
     justify-content: center;
     align-items: center;
   }
-  .modal{
+  /* .modal{
     --bs-modal-width:650px  !important
-  }
+  } */
 
 @media (max-width: 320px) {
     audio {

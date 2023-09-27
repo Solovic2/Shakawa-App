@@ -47,6 +47,7 @@ const ModalComponent = ({
           <Modal
             style={isAudio ? { textAlign: "center" } : {}}
             show={show[path]}
+            size={!isAudio ? "xl": "md" }
             dialogClassName="custom-modal"
             onHide={() => handleClose(path)}
           >
@@ -71,7 +72,7 @@ const ModalComponent = ({
                           alt="Preview"
                           style={{
                             maxWidth: "100%",
-                            maxHeight: "100%",
+                            maxHeight: "600px",
                           }}
                         />
                       </TransformComponent>
