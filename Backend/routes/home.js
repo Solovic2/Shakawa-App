@@ -6,6 +6,7 @@ const wss = require("../websocket");
 const chokidar = require("chokidar");
 const prisma = require("../prisma/prismaClient");
 const { Role, Status } = require("@prisma/client");
+const path = require('path')
 const folderPath = [process.env.FOLDER_VOICE_PATH, process.env.FOLDER_IMAGES_PATH];
 // WebSocket for notification
 
@@ -105,7 +106,7 @@ function getSortedFilesByLastModifiedTime(directoryPaths) {
   // // Iterate through the files
   files.forEach((file) => {
     // Get the file path
-    const filePath = `${file.includes("wav"| "txt") ? directoryPaths[0] : directoryPaths[1] }\\${file}`;
+    const filePath = `${file.includes("wav") || file.includes("txt") ? directoryPaths[0] : directoryPaths[1] }\\${file}`;
 
     // Get the file stats
     const stats = fs.statSync(filePath);
@@ -229,6 +230,22 @@ async function getSpecifiedFiles(user) {
   }
   return allFiles;
 }
+
+function getContentType(fileName) {
+  const fileExt = path.extname(fileName).toLowerCase();
+  switch (fileExt) {
+    case '.jpg':
+    case '.jpeg':
+      return 'image/jpeg';
+    case '.png':
+      return 'image/png';
+    case '.gif':
+      return 'image/gif';
+    // Add more cases for other image formats as needed
+    default:
+      return 'application/octet-stream';
+  }
+}
 // create a route to get data from the database
 router.get("/", requireAuth, async (req, res) => {
   const { user } = req;
@@ -273,32 +290,26 @@ router.get("/dateToday/:date", requireAuth, async (req, res) => {
   }
 });
 
-// API For Get The File Text
+// API For Get The File Image
 router.get("/file/:filePath", requireAuth, (req, res) => {
   const filePath = folderPath[1] + "\\" + req.params.filePath;
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
-      res.status(404).send("File not found");
-    } else {
-      res.setHeader("Content-Type", "routerlication/octet-stream");
-      res.setHeader("Content-Disposition", `attachment;`);
-      res.send(data);
-    }
-  });
+  console.log(filePath);
+  // Check if the file exists
+  if (fs.existsSync(filePath)) {
+     // Read the image file and convert it to a Base64 encoded string
+     const fileData = fs.readFileSync(filePath, { encoding: 'base64' });
+
+     // Determine the content type based on the file extension
+     const contentType = getContentType(req.params.filePath);
+ 
+     // Send the Base64 encoded image data to the frontend
+     res.json({ contentType, data: fileData });
+  
+  } else {
+    res.status(404).send('File not found');
+  }
 });
 
-// // API For Get The Audio File
-// router.get("/audio/:filePath", requireAuth, (req, res) => {
-//   const filePath = folderPath + "\\" + req.params.filePath;
-//   fs.readFile(filePath, (err, data) => {
-//     if (err) {
-//       res.status(404).send("File not found");
-//     } else {
-//       res.setHeader("Content-Type", "audio/wav");
-//       res.send(data);
-//     }
-//   });
-// });
 router.get("/audio/:filePath", requireAuth, (req, res) => {
   const filePath = folderPath[0] + "\\" + req.params.filePath;
   fs.stat(filePath, (err, stat) => {

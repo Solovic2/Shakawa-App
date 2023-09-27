@@ -8,6 +8,14 @@
     float: right;
     font-weight: 600;
   }
+  .image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .modal{
+    --bs-modal-width:650px  !important
+  }
 
 @media (max-width: 320px) {
     audio {
