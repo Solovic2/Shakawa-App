@@ -8,6 +8,7 @@ const prisma = require("../prisma/prismaClient");
 const { Role, Status } = require("@prisma/client");
 const path = require("path");
 const folderPath = process.env.FOLDER_PATH;
+
 // WebSocket for notification
 
 wss.on("connection", (ws) => {
@@ -19,7 +20,7 @@ wss.on("error", (error) => {
   }
 });
 // Watching Files
-const watcher = chokidar.watch([folderPath] , {
+const watcher = chokidar.watch(folderPath , {
   persistent: true,
   ignoreInitial: true,
   usePolling: true,
@@ -278,18 +279,15 @@ async function getSpecifiedFiles(user, searchQuery, skip, pageSize) {
     const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
     if (dateRegex.test(searchQuery)) {
       // If it's a date, filter by the date
-      whereOption = {
-        complainDate: {
+      whereOption.complainDate = {
           equals: new Date(searchQuery),
-        },
-      };
+        }
+      
     } else {
       // If it's a mobile number, filter by mobile
-      whereOption = {
-        mobileNumber: {
+      whereOption.mobileNumber = {
           equals: searchQuery,
-        },
-      };
+        };
     }
   }
   const files = await prisma.file.findMany({
@@ -298,7 +296,7 @@ async function getSpecifiedFiles(user, searchQuery, skip, pageSize) {
       group: {
         id: +user.groupId,
       },
-      whereOption,
+      ...whereOption,
 
     },
     skip,
@@ -326,7 +324,15 @@ async function getSpecifiedFiles(user, searchQuery, skip, pageSize) {
     };
     allFiles.push(fileData);
   }
-  return allFiles;
+  const total =  await prisma.file.count({where: {
+    flag: 0,
+    group: {
+      id: +user.groupId,
+    },
+    ...whereOption,
+
+  },})
+  return {allFiles, total};
 }
 
 function getContentType(fileName) {
@@ -350,10 +356,10 @@ router.get("/:searchQuery/:page/:pageSize", requireAuth, async (req, res) => {
   const { searchQuery, page, pageSize } = req.params;
   const skip = (page - 1) * pageSize;
   if (user.role === Role.User) {
-    const files = await getSpecifiedFiles(user, searchQuery, skip, pageSize);
-    res.json(files);
+    const {allFiles, total} = await getSpecifiedFiles(user, searchQuery, skip, pageSize);
+    res.json({allFiles, total});
   } else {
-    fs.access(folderPath[0], fs.constants.F_OK, async (err) => {
+    fs.access(folderPath, fs.constants.F_OK, async (err) => {
       if (err) {
         res.status(400).json("تأكد من اتصالك بفولدر الصوتيات من عند الخادم");
         return;
@@ -416,7 +422,7 @@ router.get("/file/:filePath", requireAuth, (req, res) => {
 });
 
 router.get("/audio/:filePath", requireAuth, (req, res) => {
-  const filePath = folderPath[0] + "\\" + req.params.filePath;
+  const filePath = folderPath + "\\" + req.params.filePath;
   fs.stat(filePath, (err, stat) => {
     if (err) {
       res.status(404).send("File not found");

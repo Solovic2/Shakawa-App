@@ -33,6 +33,9 @@ const RegistrationForm = (props) => {
               onInvalid={(e) =>
                 e.target.setCustomValidity("برجاء اختيار القسم")
               }
+              onInput={(e) => {
+                e.target.setCustomValidity('');
+              }}
             >
               {props.groups?.map((element) => {
                 return (
@@ -54,6 +57,9 @@ const RegistrationForm = (props) => {
             onInvalid={(e) =>
               e.target.setCustomValidity("برجاء إدخال إسم المستخدم")
             }
+            onInput={(e) => {
+              e.target.setCustomValidity('');
+            }}
           />
         </label>
         <label>
@@ -66,6 +72,9 @@ const RegistrationForm = (props) => {
             onInvalid={(e) =>
               e.target.setCustomValidity("برجاء إدخال كلمة السر")
             }
+            onInput={(e) => {
+              e.target.setCustomValidity('');
+            }}
           />
         </label>
         <Button

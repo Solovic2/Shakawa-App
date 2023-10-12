@@ -6,7 +6,7 @@ const SelectComponent = ({
   status,
   onSelectChange,
   edit,
-  isManager
+  isManager,
 }) => {
   const statusOrGroups = groups
     ? element.groupId !== null
@@ -28,17 +28,14 @@ const SelectComponent = ({
     for (let i = 0; i < status.length; i++) {
       switch (status[i]) {
         case "ON_UNSEEN":
-          // statusBadge = "badge text-bg-danger"
           statusValues.push(
             element.fileType === "txt" ? "لم تقرأ بعد" : "لم تسمع بعد"
           );
           break;
         case "ON_HOLD":
-          // statusBadge = "badge text-bg-warning"
           statusValues.push("جاري الدراسة");
           break;
         case "ON_SOLVE":
-          // statusBadge = "badge bg-success"
           statusValues.push("تم الحل والتواصل");
           break;
         default:
@@ -62,7 +59,11 @@ const SelectComponent = ({
       disabled={disabled && (edit ? !edit : true)}
       style={
         disabled && (edit ? !edit : true)
-          ? { backgroundColor: "#ccc", fontWeight: "bold" , width : isManager ? "90%" :""}
+          ? {
+              backgroundColor: "#ccc",
+              fontWeight: "bold",
+              width: isManager ? "90%" : "",
+            }
           : {}
       }
       required
@@ -71,6 +72,9 @@ const SelectComponent = ({
           ? (e) => e.target.setCustomValidity("برجاء اختيار القسم")
           : (e) => e.target.setCustomValidity("برجاء اختيار حالة الطلب")
       }
+      onInput={(e) => {
+        e.target.setCustomValidity('');
+      }}
     >
       {groups ? (
         <>

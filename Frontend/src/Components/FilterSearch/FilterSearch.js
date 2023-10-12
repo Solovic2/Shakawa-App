@@ -4,7 +4,6 @@ import Button from "../CommonComponents/Button";
 import Form from "react-bootstrap/Form";
 const FilterSearch = (props) => {
   const {isToggled } = props;
-  console.log(isToggled);
   return (
     <>
       <div className="searchBar">

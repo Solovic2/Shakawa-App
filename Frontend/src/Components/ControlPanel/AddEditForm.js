@@ -22,6 +22,9 @@ const AddEditForm = (props) => {
                   onInvalid={(e) =>
                     e.target.setCustomValidity("برجاء إدخال إسم المستخدم")
                   }
+                  onInput={(e) => {
+                    e.target.setCustomValidity('');
+                  }}
                 />
               </div>
               <div className="form-group">
@@ -43,6 +46,9 @@ const AddEditForm = (props) => {
                   onInvalid={(e) =>
                     e.target.setCustomValidity("برجاء اختيار دور المستخدم")
                   }
+                  onInput={(e) => {
+                    e.target.setCustomValidity('');
+                  }}
                 >
                   <option value="User">مستخدم</option>
                   <option value="Manager">مدير</option>
@@ -92,6 +98,9 @@ const AddEditForm = (props) => {
                   onInvalid={(e) =>
                     e.target.setCustomValidity("برجاء إدخال إسم القسم")
                   }
+                  onInput={(e) => {
+                    e.target.setCustomValidity('');
+                  }}
                 />
               </div>
               <Button type={"submit"} body={props.title} />

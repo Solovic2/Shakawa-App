@@ -106,7 +106,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
         });
       }
       handleClose(path);
-      setValues((prevValues) =>
+      setFilterData((prevValues) =>
         prevValues.filter((data) => data.path !== deleteData.path)
       );
       notify(5, (prev) => prev - 1);
@@ -129,11 +129,13 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
     event.preventDefault(); // prevent default form submission behavior
     const inputValue = event.target.elements.infoInput.value;
     const selection = selectedValues[path] ? selectedValues[path] : status;
+    
     if (inputValue !== "") {
       const formData = {
         info: inputValue,
         status: selection,
       };
+
       try {
         const response = await fetch(
           `http://localhost:9000/update-complain/${encodeURI(path)}`,
@@ -152,7 +154,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
         }
         const data = await response.json();
         if (data) {
-          setValues((prevData) => {
+          setFilterData((prevData) => {
             const updatedData = prevData.map((card) => {
               if (card.path === path) {
                 return { ...card, info: data.info, status: data.status };
@@ -197,6 +199,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
       record: record,
       group: selection,
     };
+
     try {
       const response = await fetch(
         "http://localhost:9000/attach-file-to-group",
@@ -219,7 +222,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
 
       const data = await response.json();
       if (data) {
-        setValues((prevData) => {
+        setFilterData((prevData) => {
           const updatedData = prevData.map((card) => {
             if (card.path === path) {
               return {
@@ -360,7 +363,6 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                     edit={showAttachForm[element.path]}
                     isManager={(user && user.role === "Manager")}
                   />
-
                   {(element.groupId === null ||
                     showAttachForm[element.path]) && (
                     <Button
@@ -439,10 +441,13 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                         className="my-input mr-2"
                         placeholder="الرد"
                         defaultValue={element.info}
-                        required
+                        onInput={(e) => {
+                          e.target.setCustomValidity('');
+                        }}
                         onInvalid={(e) =>
                           e.target.setCustomValidity("برجاء الرد على الشكوى")
                         }
+                        required
                       />
                       <Button
                         type={"submit"}
