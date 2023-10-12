@@ -8,15 +8,9 @@
     float: right;
     font-weight: 600;
   }
-  .image-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  /* .modal{
-    --bs-modal-width:650px  !important
-  } */
-
+.labels-font{
+  font-size: 18px;
+}
 @media (max-width: 320px) {
     audio {
      width: 250px;

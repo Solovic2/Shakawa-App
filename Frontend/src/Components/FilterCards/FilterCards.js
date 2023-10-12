@@ -189,11 +189,12 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
     }));
   };
 
-  const handleAttachShakwaToGroup = async (event, path, group) => {
+  const handleAttachShakwaToGroup = async (event, path, record, group) => {
     event.preventDefault();
     const selection = selectedValues[path] ? selectedValues[path] : group;
     const formData = {
       path: path,
+      record: record,
       group: selection,
     };
     try {
@@ -248,11 +249,11 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
     <div className="card-container hide-scrollbar">
       {data?.map((element) => {
         let statusBadge = "badge text-bg-danger";
-        let statusValue = "لم تقرأ بعد";
+        let statusValue = element.fileType === "txt" ?  "لم تقرأ بعد" : "لم تسمع بعد";
         switch (element.status) {
           case "ON_UNSEEN":
             statusBadge = "badge text-bg-danger";
-            statusValue = "لم تقرأ بعد";
+            statusValue = element.fileType === "txt" ?  "لم تقرأ بعد" : "لم تسمع بعد";
             break;
           case "ON_HOLD":
             statusBadge = "badge text-bg-warning";
@@ -261,6 +262,10 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
           case "ON_SOLVE":
             statusBadge = "badge bg-success";
             statusValue = "تم الحل والتواصل";
+            break;
+          case "ON_STUDY":
+            statusBadge = "badge text-bg-warning";
+            statusValue = "بالفرع المختص";
             break;
 
           default:
@@ -285,8 +290,9 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
               <ModalComponent
                 isAudio={element.fileType === "wav"}
                 complainTitle={
-                  element.fileType === "wav" ? "سماع الشكوى" : "مشاهدة الشكوى"
+                  element.fileType === "txt" ? "تفاصيل الشكوى" : "سماع الشكوى"
                 }
+                dbData = { (element.fileType === "txt" && element.record !== null) ? element.record : null}
                 mobileNumber={element.mobile}
                 unSplittedPath={element.path}
               />
@@ -294,7 +300,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
             <div className="card-status">
               <span className={statusBadge}>{statusValue}</span>
             </div>
-            {user && user.role !== "User" && (
+            {user && user.role === "Admin" && (
               <div className="deleteBtn">
                 <Button
                   className={"btn"}
@@ -338,6 +344,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                     handleAttachShakwaToGroup(
                       event,
                       element.path,
+                      element.record !== null ? element.record.id : null,
                       element.groupId
                     )
                   }
@@ -351,6 +358,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                       handleSelectChange(element.path, selectedValue)
                     }
                     edit={showAttachForm[element.path]}
+                    isManager={(user && user.role === "Manager")}
                   />
 
                   {(element.groupId === null ||
@@ -362,7 +370,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                     />
                   )}
                 </form>
-                {element.groupId !== null && (
+                {element.groupId !== null &&  user.role === "Admin" &&   (
                   <div className="edit-button">
                     <Button
                       handleClick={() => handleEditAttachShakwa(element.path)}
@@ -422,6 +430,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
                           handleSelectChange(element.path, selectedValue)
                         }
                         edit={showForm[element.path]}
+                        isManager={null}
                       />
 
                       <input
@@ -446,6 +455,7 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
               </>
             )}
           </div>
+          
         );
       })}
     </div>

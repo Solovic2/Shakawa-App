@@ -1,71 +1,33 @@
 import React from "react";
 import "./FilterSearch.css";
-import { useNavigate } from "react-router";
 import Button from "../CommonComponents/Button";
-
+import Form from "react-bootstrap/Form";
 const FilterSearch = (props) => {
-  const navigate = useNavigate();
-  const { setValues, setFilterData, setIsToggled, isToggled } = props;
-
-  const handleClick = async (event) => {
-    event.preventDefault();
-    setIsToggled(!isToggled);
-    if (!isToggled) {
-      // execute function when button is toggled on
-      const currentDate = new Date();
-      const day = String(currentDate.getDate()).padStart(2, "0");
-      const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-      const year = currentDate.getFullYear();
-      const formattedDate = `${day}-${month}-${year}`;
-
-      fetch(`http://localhost:9000/dateToday/${formattedDate}`, {
-        credentials: "include",
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          setValues(data);
-        });
-    } else {
-      fetch("http://localhost:9000/", {
-        credentials: "include",
-      })
-        .then(async (response) => {
-          if (!response.ok) {
-            if (response.status === 401) {
-              throw new Error("You are not authenticated");
-            } else {
-              throw new Error("Error fetching data");
-            }
-          }
-
-          const data = await response.json();
-          if (data) {
-            setValues(data);
-            setFilterData(data);
-            setIsToggled(false);
-          }
-        })
-        .catch((error) => {
-          console.error(error);
-          navigate("/login");
-        });
-    }
-  };
-
+  const {isToggled } = props;
+  console.log(isToggled);
   return (
     <>
       <div className="searchBar">
         <Button
           className={"btn btn-info toggleBtn"}
-          handleClick={handleClick}
+          handleClick={props.handleClickToggleButton}
           body={isToggled ? "رجوع" : "شكاوي اليوم"}
         />
-        <input
-          className="search"
-          type="search"
-          placeholder="البحث"
-          onChange={props.handleChange}
-        />
+        <Form>
+          <Form.Group>
+            <Form.Control
+              type="search"
+              placeholder="بحث بالتاريخ ورقم الهاتف"
+              value={props.inputValue}
+              onKeyDown={props.handleEnterPress}
+              onChange={props.handleChange}
+              isInvalid={props.isError}
+            />
+            <Form.Control.Feedback type="invalid">
+              الرجاء التأكد بكتابة رقم التليفون أو التاريخ على صورة يوم-شهر-سنة
+            </Form.Control.Feedback>
+          </Form.Group>
+        </Form>
       </div>
     </>
   );

@@ -4,6 +4,11 @@ const { isAdmin } = require("../middleware");
 const bcrypt = require("bcrypt");
 const wss = require("../websocket");
 const prisma = require("../prisma/prismaClient");
+const multer = require("multer");
+const XLSX = require("xlsx");
+// Configure Multer for file upload
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 wss.on("connection", (ws) => {
   console.log("WebSocket connected");
@@ -17,8 +22,8 @@ wss.on("error", (error) => {
 router.get("/users", isAdmin, async (req, res) => {
   const data = await prisma.user.findMany({
     include: {
-      group : true
-    }
+      group: true,
+    },
   });
   res.json(data);
 });
@@ -27,14 +32,12 @@ router.post("/addUser", isAdmin, async (req, res) => {
     const { username, password, role, group } = req.body.data;
     bcrypt.hash(password, 5, async function (err, hash) {
       try {
-        
         const addNewUser = await prisma.user.create({
           data: {
             username: username,
             password: hash,
             role: role,
-            groupId: group !== null ? +group : null
-            
+            groupId: group !== null ? +group : null,
           },
           select: {
             id: true,
@@ -77,7 +80,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
     const { oldUsername, username, password, role, group } = req.body.data;
     const user = await prisma.user.findUnique({
       where: {
-       username: oldUsername,
+        username: oldUsername,
       },
     });
     let hashPassword = password;
@@ -93,11 +96,14 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
               username: username,
               password: hashPassword,
               role: role,
-              groupId : group !== null ? +group : null
+              groupId: group !== null ? +group : null,
             },
           });
-          const match = await bcrypt.compare(updateUser.password, user.password);
-          if(user && user.groupId !== +group ){
+          const match = await bcrypt.compare(
+            updateUser.password,
+            user.password
+          );
+          if (user && user.groupId !== +group) {
             let item = {
               type: "user_changed_group",
               data: updateUser,
@@ -106,8 +112,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
             wss.clients.forEach((client) => {
               client.send(message);
             });
-          }else if(user && user.role !== role){
-            
+          } else if (user && user.role !== role) {
             let item = {
               type: "user_changed_role",
               data: updateUser,
@@ -116,7 +121,10 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
             wss.clients.forEach((client) => {
               client.send(message);
             });
-          }else if(user && user.username !== updateUser.username || !match){
+          } else if (
+            (user && user.username !== updateUser.username) ||
+            !match
+          ) {
             let item = {
               type: "user_changed_username_password",
               data: updateUser,
@@ -142,10 +150,10 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
           data: {
             username: username,
             role: role,
-            groupId : group !== null ? +group : null
+            groupId: group !== null ? +group : null,
           },
         });
-        if(user && user.groupId !== +group ){
+        if (user && user.groupId !== +group) {
           let item = {
             type: "user_changed_group",
             data: updateUser,
@@ -154,7 +162,8 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
           wss.clients.forEach((client) => {
             client.send(message);
           });
-        }if(user && user.role !== role){
+        }
+        if (user && user.role !== role) {
           console.log("S");
           let item = {
             type: "user_changed_role",
@@ -165,7 +174,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
           wss.clients.forEach((client) => {
             client.send(message);
           });
-        }else if(user && user.username !== updateUser.username){
+        } else if (user && user.username !== updateUser.username) {
           let item = {
             type: "user_changed_username_password",
             data: updateUser,
@@ -216,10 +225,10 @@ router.get("/groups", isAdmin, async (req, res) => {
 });
 router.post("/addGroup", isAdmin, async (req, res) => {
   try {
-    const {name} = req.body.data;
+    const { name } = req.body.data;
     const createGroup = await prisma.group.create({
       data: {
-        name: name
+        name: name,
       },
     });
     res.json(createGroup);
@@ -255,20 +264,20 @@ router.put("/update-group/:id", isAdmin, async (req, res) => {
       where: {
         id: +id,
       },
-      data:{
-        name: name
-      }
+      data: {
+        name: name,
+      },
     });
-    if(groupName == null){
+    if (groupName == null) {
       let item = {
-            type: "user_changed_group",
-            data: data,
-          };
-          const message = JSON.stringify(item);
-          console.log(wss.clients);
-          wss.clients.forEach((client) => {
-            client.send(message);
-          });
+        type: "user_changed_group",
+        data: data,
+      };
+      const message = JSON.stringify(item);
+      console.log(wss.clients);
+      wss.clients.forEach((client) => {
+        client.send(message);
+      });
     }
     res.json(data);
   } catch (e) {
@@ -279,7 +288,6 @@ router.put("/update-group/:id", isAdmin, async (req, res) => {
       res.json("إسم القسم موجود مسبقاً");
     }
   }
- 
 });
 
 router.delete("/delete-group/:id", isAdmin, async (req, res) => {
@@ -301,7 +309,7 @@ router.delete("/delete-group/:id", isAdmin, async (req, res) => {
   res.json(data);
 });
 
-/* Files */ 
+/* Files */
 router.post("/add-new-file", async (req, res) => {
   try {
     const data = req.body;
@@ -326,24 +334,22 @@ router.post("/add-new-file", async (req, res) => {
 });
 router.post("/update-file/", isAdmin, async (req, res) => {
   try {
-
     const data = req.body;
     const updateOrAddFile = await prisma.file.upsert({
-      where:{
-        path: data.path 
+      where: {
+        path: data.path,
       },
-      update:{
-        flag:  data.flag ? data.flag : 0,
-        groupId: +data.group
+      update: {
+        flag: data.flag ? data.flag : 0,
+        groupId: +data.group,
       },
-      create:{
+      create: {
         path: data.path,
         flag: data.flag ? data.flag : 0,
-        groupId: +data.group
+        groupId: +data.group,
       },
-    })
+    });
     res.status(200).json(updateOrAddFile);
-
   } catch (e) {
     if (e.code === "P2002") {
       console.log(
@@ -351,6 +357,57 @@ router.post("/update-file/", isAdmin, async (req, res) => {
       );
       res.json("إسم القسم موجود مسبقاً");
     }
+  }
+});
+
+// Define your API endpoint for file upload
+router.post("/upload-excel-sheet", upload.single("file"), async (req, res) => {
+  try {
+    const workbook = XLSX.read(req.file.buffer);
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(sheet);
+    // Now, insert the data into your database using Prisma
+    const createRecords = jsonData.map((row) => {
+      // Format Date [التاريخ] from serial number  to dd-mm-yyy
+      const date = new Date((row['التاريخ'] - 25569) * 86400 * 1000);
+      let type = "Undefined";
+      switch (row["الصفة"] + "") {
+        case "عسكرى":
+          type = "Soldier";
+          break;
+
+        case "مدنى":
+          type = "Soldier";
+          break;
+
+        case "غير محدد":
+          type = "Undefined";
+          break;
+        default:
+          type = "Undefined";
+      }
+      return prisma.complaint.create({
+        data: {
+          name: row["الأسم"] + "",
+          type: type + "",
+          email: row["البريد"] ? row["البريد"] + "" : null,
+          mobileNumber: "0" + row["التليفون"],
+          SID: row["الرقم العسكرى"] ?  row["الرقم العسكرى"] + "" : null,
+          MID: row["رقم العضوية"] ? row["رقم العضوية"] + "" : null,
+          complainText: row["الشكوى"] + "",
+          complainDate: date,
+        },
+      });
+    });
+
+    await prisma.$transaction(createRecords);
+
+    console.log(`Excel Data inserted: ${jsonData.length} records`);
+    res.send(jsonData.length > 0);
+  } catch (error) {
+    console.error(error);
+    res.status(400).send({message: "حدثت مشكلة اثناء تحميل الإكسيل شيت لقاعدة البيانات، الرجاء التأكد إذا كان الإكسيل شيت صحيح."});
   }
 });
 module.exports = router;
