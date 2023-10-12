@@ -147,8 +147,7 @@ const FilterBox = ({ user, notify }) => {
             setValues(allFiles);
             setFilterData(allFiles);
             setTotal(total);
-            if(!isToggled)
-            setIsToggled(false);
+            if (!isToggled) setIsToggled(false);
           }
         }
       })
@@ -187,7 +186,7 @@ const FilterBox = ({ user, notify }) => {
   };
   const handleClickToggleButton = (event) => {
     event.preventDefault();
-    setIsToggled((isToggled) => !isToggled)
+    setIsToggled((isToggled) => !isToggled);
     if (!isToggled) {
       // execute function when button is toggled on
       const currentDate = new Date();
@@ -195,11 +194,10 @@ const FilterBox = ({ user, notify }) => {
       const month = String(currentDate.getMonth() + 1).padStart(2, "0");
       const year = currentDate.getFullYear();
       const formattedDate = `${year}-${month}-${day}`;
-      console.log(formattedDate);
-      setPage(1)
+      setPage(1);
       setSearchQuery(formattedDate);
     } else {
-      setPage(1)
+      setPage(1);
       setSearchQuery("*");
     }
   };
@@ -217,21 +215,28 @@ const FilterBox = ({ user, notify }) => {
       <FilterCards
         user={user}
         data={filterData}
+        pageSize={pageSize}
+        page={page}
+        total={total}
+        setPage={setPage}
         setFilterData={setFilterData}
         setValues={setValues}
         notify={notify}
       />
-      <div className="pagination" style={{ justifyContent: "center" }}>
-        <Pagination
-          current={page}
-          pageSize={pageSize}
-          total={total}
-          onChange={(newPage, newPageSize) => {
-            setPage(newPage);
-            setPageSize(newPageSize);
-          }}
-        />
-      </div>
+      {total > pageSize && (
+        <div className="pagination" style={{ justifyContent: "center" }}>
+          <Pagination
+            defaultCurrent={1}
+            current={page}
+            pageSize={pageSize}
+            total={total}
+            onChange={(newPage, newPageSize) => {
+              setPage(newPage);
+              setPageSize(newPageSize);
+            }}
+          />
+        </div>
+      )}
     </>
   );
 };

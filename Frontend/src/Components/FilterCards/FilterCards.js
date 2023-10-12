@@ -6,7 +6,7 @@ import Button from "../CommonComponents/Button";
 import Modal from "react-bootstrap/Modal";
 import "./ModalComponent.css";
 
-function FilterCards({ user, data, setFilterData, setValues, notify }) {
+function FilterCards({ user, data, pageSize, page, setPage, total, setFilterData, setValues, notify }) {
   const infoContainerRef = useRef(null);
   const [showForm, setShowForm] = useState({});
   const [showAttachForm, setShowAttachForm] = useState({});
@@ -106,9 +106,22 @@ function FilterCards({ user, data, setFilterData, setValues, notify }) {
         });
       }
       handleClose(path);
-      setFilterData((prevValues) =>
-        prevValues.filter((data) => data.path !== deleteData.path)
-      );
+      const updatedData = data.filter((data) => data.path !== deleteData.path)
+      setFilterData(updatedData);
+
+      if (updatedData.length === 0) {
+        // If there are no items left on the current page, decide where to move
+        
+        if (page > 1) {
+          // If there are previous pages, go back one page
+          const newPage = page - 1;
+          setPage(newPage);
+        } else if (page < total / pageSize) {
+          // If there are more pages ahead, go forward one page
+          const newPage = page + 1;
+          setPage(newPage);
+        }
+      }
       notify(5, (prev) => prev - 1);
       // Remove the deleted card from the state
     } catch (error) {

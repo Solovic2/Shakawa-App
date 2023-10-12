@@ -20,7 +20,7 @@ wss.on("error", (error) => {
   }
 });
 // Watching Files
-const watcher = chokidar.watch(folderPath , {
+const watcher = chokidar.watch(folderPath, {
   persistent: true,
   ignoreInitial: true,
   usePolling: true,
@@ -122,7 +122,7 @@ async function getSortedFilesAndRecordsByDate(
       };
     }
   }
-  
+
   // // Iterate through the files
   files.forEach((file) => {
     const regex = /(\d{2})-(\d{2})-(\d{4})/;
@@ -172,7 +172,6 @@ async function getSortedFilesAndRecordsByDate(
     allRecords.sort((a, b) => b.date - a.date); // Sort data by date in descending order
   }
 
- 
   // console.log(allRecords);
   // Get Total Data number in Database and Files For Pagination
   if (searchQuery !== "*") {
@@ -183,8 +182,19 @@ async function getSortedFilesAndRecordsByDate(
     countDB = await prisma.complaint.count();
   }
 
-  allRecords = allRecords.slice(skip , (skip + parseInt(pageSize)))
-  const total = countDB + files.length;
+  const dataWithFlagOne = await prisma.file.findMany({
+    where: {
+      flag: 1,
+    },
+    select: {
+      path: true,
+    },
+  });
+
+  const pathsWithFlagOne = dataWithFlagOne.map(record => record.path);
+  allRecords = allRecords.filter(record => !pathsWithFlagOne.includes(record.path));
+  allRecords = allRecords.slice(skip, skip + parseInt(pageSize));
+  const total = countDB + files.length - pathsWithFlagOne.length;
   return { allRecords, total };
 }
 // Read Files And Records In Database and return it.
@@ -209,6 +219,7 @@ async function readAllFiles(folderPath, searchQuery = "*", skip, pageSize) {
           path: {
             in: paths,
           },
+          flag:0,
         },
         include: {
           user: true,
@@ -217,7 +228,6 @@ async function readAllFiles(folderPath, searchQuery = "*", skip, pageSize) {
       for (let i = 0; i < paths.length; i++) {
         const path = paths[i];
         const splittedData = splitPath(path);
-
         // Check if path exists in disabledFiles
         const element = disabledFiles.find((df) => df.path === path);
         if (element !== undefined && element.flag !== 1) {
@@ -272,22 +282,20 @@ function getDataToday(files, date) {
 }
 
 async function getSpecifiedFiles(user, searchQuery, skip, pageSize) {
-
   let whereOption;
-   if (searchQuery !== "*") {
+  if (searchQuery !== "*") {
     // If searchQuery is not empty, check if it's a date or a mobile number
     const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
     if (dateRegex.test(searchQuery)) {
       // If it's a date, filter by the date
       whereOption.complainDate = {
-          equals: new Date(searchQuery),
-        }
-      
+        equals: new Date(searchQuery),
+      };
     } else {
       // If it's a mobile number, filter by mobile
       whereOption.mobileNumber = {
-          equals: searchQuery,
-        };
+        equals: searchQuery,
+      };
     }
   }
   const files = await prisma.file.findMany({
@@ -297,7 +305,6 @@ async function getSpecifiedFiles(user, searchQuery, skip, pageSize) {
         id: +user.groupId,
       },
       ...whereOption,
-
     },
     skip,
     take: parseInt(pageSize),
@@ -324,30 +331,31 @@ async function getSpecifiedFiles(user, searchQuery, skip, pageSize) {
     };
     allFiles.push(fileData);
   }
-  const total =  await prisma.file.count({where: {
-    flag: 0,
-    group: {
-      id: +user.groupId,
+  const total = await prisma.file.count({
+    where: {
+      flag: 0,
+      group: {
+        id: +user.groupId,
+      },
+      ...whereOption,
     },
-    ...whereOption,
-
-  },})
-  return {allFiles, total};
+  });
+  return { allFiles, total };
 }
 
 function getContentType(fileName) {
   const fileExt = path.extname(fileName).toLowerCase();
   switch (fileExt) {
-    case '.jpg':
-    case '.jpeg':
-      return 'image/jpeg';
-    case '.png':
-      return 'image/png';
-    case '.gif':
-      return 'image/gif';
+    case ".jpg":
+    case ".jpeg":
+      return "image/jpeg";
+    case ".png":
+      return "image/png";
+    case ".gif":
+      return "image/gif";
     // Add more cases for other image formats as needed
     default:
-      return 'application/octet-stream';
+      return "application/octet-stream";
   }
 }
 // create a route to get data from the database
@@ -356,8 +364,13 @@ router.get("/:searchQuery/:page/:pageSize", requireAuth, async (req, res) => {
   const { searchQuery, page, pageSize } = req.params;
   const skip = (page - 1) * pageSize;
   if (user.role === Role.User) {
-    const {allFiles, total} = await getSpecifiedFiles(user, searchQuery, skip, pageSize);
-    res.json({allFiles, total});
+    const { allFiles, total } = await getSpecifiedFiles(
+      user,
+      searchQuery,
+      skip,
+      pageSize
+    );
+    res.json({ allFiles, total });
   } else {
     fs.access(folderPath, fs.constants.F_OK, async (err) => {
       if (err) {
@@ -407,17 +420,16 @@ router.get("/file/:filePath", requireAuth, (req, res) => {
   console.log(filePath);
   // Check if the file exists
   if (fs.existsSync(filePath)) {
-     // Read the image file and convert it to a Base64 encoded string
-     const fileData = fs.readFileSync(filePath, { encoding: 'base64' });
+    // Read the image file and convert it to a Base64 encoded string
+    const fileData = fs.readFileSync(filePath, { encoding: "base64" });
 
-     // Determine the content type based on the file extension
-     const contentType = getContentType(req.params.filePath);
- 
-     // Send the Base64 encoded image data to the frontend
-     res.json({ contentType, data: fileData });
-  
+    // Determine the content type based on the file extension
+    const contentType = getContentType(req.params.filePath);
+
+    // Send the Base64 encoded image data to the frontend
+    res.json({ contentType, data: fileData });
   } else {
-    res.status(404).send('File not found');
+    res.status(404).send("File not found");
   }
 });
 
