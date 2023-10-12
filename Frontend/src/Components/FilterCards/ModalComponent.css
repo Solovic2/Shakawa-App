@@ -8,7 +8,9 @@
     float: right;
     font-weight: 600;
   }
-
+.labels-font{
+  font-size: 18px;
+}
 @media (max-width: 320px) {
     audio {
      width: 250px;

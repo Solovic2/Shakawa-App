@@ -6,6 +6,7 @@ const wss = require("../websocket");
 const chokidar = require("chokidar");
 const prisma = require("../prisma/prismaClient");
 const { Role, Status } = require("@prisma/client");
+const path = require("path");
 const folderPath = process.env.FOLDER_PATH;
 // WebSocket for notification
 
@@ -26,7 +27,7 @@ const watcher = chokidar.watch(folderPath, {
 watcher
   .on("add", async (path) => {
     console.log(`File ${path} has been added`);
-    if(!path.includes("tmp1")){
+    if (!path.includes("tmp1")) {
       const data = splitPath(path);
       let item = {
         type: "add",
@@ -46,7 +47,6 @@ watcher
         client.send(message);
       });
     }
-  
   })
   .on("unlink", async (path) => {
     console.log(`File ${path} has been removed`);
@@ -59,7 +59,7 @@ watcher
       });
     } catch (error) {}
 
-    if(!path.includes("tmp1")){
+    if (!path.includes("tmp1")) {
       let message = {
         type: "delete",
         data: {
@@ -71,7 +71,6 @@ watcher
         client.send(JSON.stringify(message));
       });
     }
-   
   })
   .on("error", (error) => console.log(`Watcher error: ${error}`));
 
@@ -82,53 +81,126 @@ const splitPath = (element) => {
   const path = element.split(/[\\\.]/);
   const splitter = path[path.length - 2].split("-");
   const info = [];
-  if (splitter[0].length >= 11) {
-    info.push(splitter[0]);
-    info.push(splitter[1] + "-" + splitter[2] + "-" + splitter[3]);
-  } else {
-    info.push("");
-    info.push(splitter[1] + "-" + splitter[2] + "-" + splitter[3]);
-  }
+  info.push(splitter[0]);
+  info.push(splitter[1] + "-" + splitter[2] + "-" + splitter[3]);
   info.push(path[path.length - 1]);
   return info;
 };
 
-// Get Files With Last Modified
-function getSortedFilesByLastModifiedTime(directoryPath) {
-  const files = fs.readdirSync(directoryPath);
+// Get Files With Last Modified And  Texts from Database
+async function getSortedFilesAndRecordsByDate(
+  directoryPath,
+  searchQuery,
+  skip,
+  pageSize
+) {
+  // Create an array to store all data from db and files information
+  let allRecords = [];
+  let where; // Define a condition for filtering
+  let countDB = 0;
 
-  // Create an array to store file information
-  const fileDetails = [];
-
-  // Iterate through the files
+  /*****  Get Files From OS and Paginate on it *****/
+  let files = await fs.promises.readdir(directoryPath);
+  if (searchQuery !== "*") {
+    // If searchQuery is not empty, check if it's a date or a mobile number
+    files = files.filter((file) => file.includes(searchQuery));
+    const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+    if (dateRegex.test(searchQuery)) {
+      // If it's a date, filter by the date
+      where = {
+        complainDate: {
+          equals: new Date(searchQuery),
+        },
+      };
+    } else {
+      // If it's a mobile number, filter by mobile
+      where = {
+        mobileNumber: {
+          equals: searchQuery,
+        },
+      };
+    }
+  }
+  
+  // // Iterate through the files
   files.forEach((file) => {
-    // Get the file path
-    const filePath = `${directoryPath}\\${file}`;
-
-    // Get the file stats
-    const stats = fs.statSync(filePath);
-
-    // Store file details
-    fileDetails.push({
-      path: filePath,
-      name: file,
-      lastModified: stats.mtime,
-    });
+    const regex = /(\d{2})-(\d{2})-(\d{4})/;
+    const match = file.match(regex);
+    if (match) {
+      allRecords.push({
+        path: file,
+        data: null,
+        date: new Date(match[3], match[2] - 1, match[1]),
+      });
+    } else {
+      console.log("Date not found in File");
+    }
   });
 
-  // Sort files by last modified date in descending order
-  fileDetails.sort((a, b) => b.lastModified - a.lastModified);
+  /*****  Get Text Data From Database and Paginate on it *****/
+  const paginatedTexts = await prisma.complaint.findMany({
+    where,
+  });
+  // Read Texts From Database , Date is On yyyy-mm-dd form
+  paginatedTexts.forEach((text) => {
+    const regex = /(\d{4})-(\d{2})-(\d{2})/;
+    const date = text.complainDate.toISOString() + "";
+    const match = date.match(regex); // to make it string
+    if (match) {
+      allRecords.push({
+        // Make Path unique as id\mobile-dd-mm-yy.txt because db could has more than field with same name and date
+        path:
+          text.id +
+          "\\" +
+          text.mobileNumber +
+          "-" +
+          match[3] +
+          "-" +
+          match[2] +
+          "-" +
+          match[1] +
+          ".txt",
+        data: text, // Data Of Database
+        date: new Date(match[1], match[2] - 1, match[3]),
+      });
+    }
+  });
 
-  return fileDetails;
+  if (!searchQuery.match(/^\d{2}-\d{2}-\d{4}$/)) {
+    // Sort By Date When Mobile or Getting All Data
+    allRecords.sort((a, b) => b.date - a.date); // Sort data by date in descending order
+  }
+
+ 
+  // console.log(allRecords);
+  // Get Total Data number in Database and Files For Pagination
+  if (searchQuery !== "*") {
+    countDB = await prisma.complaint.count({
+      where,
+    });
+  } else {
+    countDB = await prisma.complaint.count();
+  }
+
+  allRecords = allRecords.slice(skip , (skip + parseInt(pageSize)))
+  const total = countDB + files.length;
+  return { allRecords, total };
 }
-// Read And Put Into Database
-async function readAllFiles(folderPath) {
+// Read Files And Records In Database and return it.
+async function readAllFiles(folderPath, searchQuery = "*", skip, pageSize) {
   try {
     let allFiles = [];
     let paths = [];
-    const sortedFiles = await getSortedFilesByLastModifiedTime(folderPath);
-    for (let i = 0; i < sortedFiles.length; i++) {
-      paths.push(sortedFiles[i].path);
+    let data = [];
+    const { allRecords, total } = await getSortedFilesAndRecordsByDate(
+      folderPath,
+      searchQuery,
+      skip,
+      pageSize
+    );
+    for (let i = 0; i < allRecords.length; i++) {
+      paths.push(allRecords[i].path);
+      data.push(allRecords[i].data);
     }
     if (paths.length > 0) {
       const disabledFiles = await prisma.file.findMany({
@@ -137,26 +209,25 @@ async function readAllFiles(folderPath) {
             in: paths,
           },
         },
-        include:{
-          user: true
-        }
+        include: {
+          user: true,
+        },
       });
       for (let i = 0; i < paths.length; i++) {
         const path = paths[i];
-        const data = splitPath(path);
+        const splittedData = splitPath(path);
 
         // Check if path exists in disabledFiles
         const element = disabledFiles.find((df) => df.path === path);
         if (element !== undefined && element.flag !== 1) {
           const fileData = {
             path: path,
+            record: data[i],
             info: element.info,
-            mobile: data[0],
-            fileDate: data[1],
-            fileType: data[2],
-            repliedBy: element.user
-              ? element.user.username
-              : null,
+            mobile: splittedData[0],
+            fileDate: splittedData[1],
+            fileType: splittedData[2],
+            repliedBy: element.user ? element.user.username : null,
             groupId: element.groupId,
             status: element.status,
           };
@@ -165,9 +236,10 @@ async function readAllFiles(folderPath) {
           const fileData = {
             path: path,
             info: "",
-            mobile: data[0],
-            fileDate: data[1],
-            fileType: data[2],
+            record: data[i],
+            mobile: splittedData[0],
+            fileDate: splittedData[1],
+            fileType: splittedData[2],
             repliedBy: null,
             groupId: null,
             status: Status.ON_UNSEEN,
@@ -177,7 +249,7 @@ async function readAllFiles(folderPath) {
       }
     }
     // console.log(allFiles);
-    return allFiles;
+    return { allFiles, total };
   } catch (err) {
     console.error(err);
     throw err;
@@ -198,24 +270,52 @@ function getDataToday(files, date) {
   }
 }
 
-async function getSpecifiedFiles(user) {
+async function getSpecifiedFiles(user, searchQuery, skip, pageSize) {
+
+  let whereOption;
+   if (searchQuery !== "*") {
+    // If searchQuery is not empty, check if it's a date or a mobile number
+    const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+    if (dateRegex.test(searchQuery)) {
+      // If it's a date, filter by the date
+      whereOption = {
+        complainDate: {
+          equals: new Date(searchQuery),
+        },
+      };
+    } else {
+      // If it's a mobile number, filter by mobile
+      whereOption = {
+        mobileNumber: {
+          equals: searchQuery,
+        },
+      };
+    }
+  }
   const files = await prisma.file.findMany({
     where: {
       flag: 0,
       group: {
         id: +user.groupId,
       },
+      whereOption,
+
     },
+    skip,
+    take: parseInt(pageSize),
     include: {
       user: true,
+      complaint: true,
     },
   });
   let allFiles = [];
+
   for (let i = 0; i < files.length; i++) {
     const path = files[i].path;
     const data = splitPath(path);
     const fileData = {
       path: path,
+      record: files[i].complaint,
       info: files[i].info,
       mobile: data[0],
       fileDate: data[1],
@@ -229,10 +329,12 @@ async function getSpecifiedFiles(user) {
   return allFiles;
 }
 // create a route to get data from the database
-router.get("/", requireAuth, async (req, res) => {
+router.get("/:searchQuery/:page/:pageSize", requireAuth, async (req, res) => {
   const { user } = req;
+  const { searchQuery, page, pageSize } = req.params;
+  const skip = (page - 1) * pageSize;
   if (user.role === Role.User) {
-    const files = await getSpecifiedFiles(user);
+    const files = await getSpecifiedFiles(user, searchQuery, skip, pageSize);
     res.json(files);
   } else {
     fs.access(folderPath, fs.constants.F_OK, async (err) => {
@@ -240,8 +342,13 @@ router.get("/", requireAuth, async (req, res) => {
         res.status(400).json("تأكد من اتصالك بفولدر الصوتيات من عند الخادم");
         return;
       } else {
-        const files = await readAllFiles(folderPath);
-        res.json(files);
+        const { allFiles, total } = await readAllFiles(
+          folderPath,
+          searchQuery,
+          skip,
+          pageSize
+        );
+        res.json({ allFiles, total });
       }
     });
   }
@@ -254,23 +361,23 @@ router.get("/groups", async (req, res) => {
 });
 
 // create a route to get data today
-router.get("/dateToday/:date", requireAuth, async (req, res) => {
-  try {
-    const date = req.params.date;
-    const { user } = req;
-    let files = [];
-    if (user.role === Role.User) {
-      files = await getSpecifiedFiles(user);
-    } else {
-      files = await readAllFiles(folderPath);
-    }
-    const data = getDataToday(files, date);
-    res.json(data);
-  } catch (error) {
-    console.error("Error updating database:", error);
-    res.sendStatus(500);
-  }
-});
+// router.get("/dateToday/:date", requireAuth, async (req, res) => {
+//   try {
+//     const date = req.params.date;
+//     const { user } = req;
+//     let files = [];
+//     if (user.role === Role.User) {
+//       files = await getSpecifiedFiles(user);
+//     } else {
+//       files = await readAllFiles(folderPath);
+//     }
+//     const data = getDataToday(files, date);
+//     res.json(data);
+//   } catch (error) {
+//     console.error("Error updating database:", error);
+//     res.sendStatus(500);
+//   }
+// });
 
 // API For Get The File Text
 router.get("/file/:filePath", requireAuth, (req, res) => {
@@ -350,7 +457,7 @@ router.post("/attach-file-to-group", requireAuth, async (req, res) => {
         groupId: +data.group,
         info: "",
         userId: null,
-        status: Status.ON_UNSEEN,
+        status: Status.ON_STUDY,
       };
     } else {
       updateData = {
@@ -368,14 +475,26 @@ router.post("/attach-file-to-group", requireAuth, async (req, res) => {
         groupId: +data.group,
         info: "",
         userId: null,
+        complaintId: data.record !== null ? +data.record : null,
+        status: Status.ON_STUDY,
       },
     });
     const splitData = splitPath(data.path);
+    let record = null;
+    if (data.record !== null) {
+      record = await prisma.complaint.findUnique({
+        where: {
+          id: +data.record,
+        },
+      });
+    } else {
+      record = null;
+    }
     updateOrAddFile.mobile = splitData[0];
     updateOrAddFile.fileDate = splitData[1];
     updateOrAddFile.fileType = splitData[2];
     updateOrAddFile.repliedBy = null;
-
+    updateOrAddFile.record = record;
     let item = {
       type: isSameGroupID ? "user_delete_add" : "user_add",
       data: updateOrAddFile,
