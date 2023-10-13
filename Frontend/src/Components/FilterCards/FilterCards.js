@@ -6,7 +6,17 @@ import Button from "../CommonComponents/Button";
 import Modal from "react-bootstrap/Modal";
 import "./ModalComponent.css";
 
-function FilterCards({ user, data, pageSize, page, setPage, total, setFilterData, setValues, notify }) {
+function FilterCards({
+  user,
+  data,
+  pageSize,
+  page,
+  setPage,
+  total,
+  setFilterData,
+  setValues,
+  notify,
+}) {
   const infoContainerRef = useRef(null);
   const [showForm, setShowForm] = useState({});
   const [showAttachForm, setShowAttachForm] = useState({});
@@ -106,22 +116,8 @@ function FilterCards({ user, data, pageSize, page, setPage, total, setFilterData
         });
       }
       handleClose(path);
-      const updatedData = data.filter((data) => data.path !== deleteData.path)
+      const updatedData = data.filter((data) => data.path !== deleteData.path);
       setFilterData(updatedData);
-
-      if (updatedData.length === 0) {
-        // If there are no items left on the current page, decide where to move
-        
-        if (page > 1) {
-          // If there are previous pages, go back one page
-          const newPage = page - 1;
-          setPage(newPage);
-        } else if (page < total / pageSize) {
-          // If there are more pages ahead, go forward one page
-          const newPage = page + 1;
-          setPage(newPage);
-        }
-      }
       notify(5, (prev) => prev - 1);
       // Remove the deleted card from the state
     } catch (error) {
@@ -142,7 +138,7 @@ function FilterCards({ user, data, pageSize, page, setPage, total, setFilterData
     event.preventDefault(); // prevent default form submission behavior
     const inputValue = event.target.elements.infoInput.value;
     const selection = selectedValues[path] ? selectedValues[path] : status;
-    
+
     if (inputValue !== "") {
       const formData = {
         info: inputValue,
@@ -265,11 +261,13 @@ function FilterCards({ user, data, pageSize, page, setPage, total, setFilterData
     <div className="card-container hide-scrollbar">
       {data?.map((element) => {
         let statusBadge = "badge text-bg-danger";
-        let statusValue = element.fileType === "txt" ?  "لم تقرأ بعد" : "لم تسمع بعد";
+        let statusValue =
+          element.fileType === "txt" ? "لم تقرأ بعد" : "لم تسمع بعد";
         switch (element.status) {
           case "ON_UNSEEN":
             statusBadge = "badge text-bg-danger";
-            statusValue = element.fileType === "txt" ?  "لم تقرأ بعد" : "لم تسمع بعد";
+            statusValue =
+              element.fileType === "txt" ? "لم تقرأ بعد" : "لم تسمع بعد";
             break;
           case "ON_HOLD":
             statusBadge = "badge text-bg-warning";
@@ -308,7 +306,11 @@ function FilterCards({ user, data, pageSize, page, setPage, total, setFilterData
                 complainTitle={
                   element.fileType === "txt" ? "تفاصيل الشكوى" : "سماع الشكوى"
                 }
-                dbData = { (element.fileType === "txt" && element.record !== null) ? element.record : null}
+                dbData={
+                  element.fileType === "txt" && element.record !== null
+                    ? element.record
+                    : null
+                }
                 mobileNumber={element.mobile}
                 unSplittedPath={element.path}
               />
@@ -330,10 +332,14 @@ function FilterCards({ user, data, pageSize, page, setPage, total, setFilterData
                   onHide={() => handleClose(element.path)}
                 >
                   <Modal.Header style={{ textAlign: "center" }} closeButton>
-                    <Modal.Title style={{ width:"100%", textAlign: "center"}}>  إخفاء الشكوى الخاصة بالرقم {element.mobile}</Modal.Title>
+                    <Modal.Title style={{ width: "100%", textAlign: "center" }}>
+                      {" "}
+                      إخفاء الشكوى الخاصة بالرقم {element.mobile}
+                    </Modal.Title>
                   </Modal.Header>
-                  <Modal.Body style={{ direction: "rtl"}}>
-                    لا يمكنك إعادة هذه الشكوى بعد إخفائها إلا بعد الرجوع للنظم هل أنت متأكد من انك تريد إخفاء الشكوى ؟
+                  <Modal.Body style={{ direction: "rtl" }}>
+                    لا يمكنك إعادة هذه الشكوى بعد إخفائها إلا بعد الرجوع للنظم
+                    هل أنت متأكد من انك تريد إخفاء الشكوى ؟
                   </Modal.Body>
                   <Modal.Footer>
                     <Button
@@ -374,7 +380,7 @@ function FilterCards({ user, data, pageSize, page, setPage, total, setFilterData
                       handleSelectChange(element.path, selectedValue)
                     }
                     edit={showAttachForm[element.path]}
-                    isManager={(user && user.role === "Manager")}
+                    isManager={user && user.role === "Manager"}
                   />
                   {(element.groupId === null ||
                     showAttachForm[element.path]) && (
@@ -385,7 +391,7 @@ function FilterCards({ user, data, pageSize, page, setPage, total, setFilterData
                     />
                   )}
                 </form>
-                {element.groupId !== null &&  user.role === "Admin" &&   (
+                {element.groupId !== null && user.role === "Admin" && (
                   <div className="edit-button">
                     <Button
                       handleClick={() => handleEditAttachShakwa(element.path)}
@@ -455,7 +461,7 @@ function FilterCards({ user, data, pageSize, page, setPage, total, setFilterData
                         placeholder="الرد"
                         defaultValue={element.info}
                         onInput={(e) => {
-                          e.target.setCustomValidity('');
+                          e.target.setCustomValidity("");
                         }}
                         onInvalid={(e) =>
                           e.target.setCustomValidity("برجاء الرد على الشكوى")
@@ -473,7 +479,6 @@ function FilterCards({ user, data, pageSize, page, setPage, total, setFilterData
               </>
             )}
           </div>
-          
         );
       })}
     </div>
