@@ -15,12 +15,15 @@ const FilterSearch = (props) => {
     isError,
   } = props;
 
-  let optionUnSeen = { label: "لم تقرأ (تسمع) بعد", value: "ON_UNSEEN" };
+  let optionUnSeen = { label: "لم تقرأ / تسمع بعد", value: "ON_UNSEEN" };
   const options = [
     { label: "شكاوى اليوم", value: "ON_TODAY" },
     { label: "جاري الدراسة", value: "ON_HOLD" },
     { label: "تم الحل والتواصل", value: "ON_SOLVE" },
-    { label: "بالفرع المختص", value: "ON_STUDY" },
+    {
+      label: user && user.role === "User" ? "المطلوب للرد" : "بالفرع المختص",
+      value: "ON_STUDY",
+    },
   ];
   if (user.role !== "User") {
     options.push(optionUnSeen);

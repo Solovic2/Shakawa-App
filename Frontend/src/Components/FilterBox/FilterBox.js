@@ -32,26 +32,26 @@ const FilterBox = ({ user, notify }) => {
       } else if (page === 1 && total !== 0) {
         setPage(page + 1);
       }
-      // if (page === 1 && total > pageSize) {
-      //   const newPage = page - 1;
-      //   setPage(newPage);
-      // } else if (page > 1) {
-      //   // If there are previous pages, go back one page
-      //   const newPage = page - 1;
-      //   setPage(newPage);
-      // } else if (page < total / pageSize) {
-      //   // If there are more pages ahead, go forward one page
-      //   const newPage = page + 1;
-      //   setPage(newPage);
-      // }
-    } else if (filterData.length > pageSize) {
-      // setFilterData((prevFilterData) => {
-      //   const sortedData = [...prevFilterData].sort(
-      //     (a, b) => new Date(b.fileDate) - new Date(a.fileDate)
-      //   );
-      //   const truncatedData = sortedData.slice(0, pageSize);
-      //   return truncatedData;
-      // });
+      //   if (page === 1 && total > pageSize) {
+      //     const newPage = page - 1;
+      //     setPage(newPage);
+      //   } else if (page > 1) {
+      //     // If there are previous pages, go back one page
+      //     const newPage = page - 1;
+      //     setPage(newPage);
+      //   } else if (page < total / pageSize) {
+      //     // If there are more pages ahead, go forward one page
+      //     const newPage = page + 1;
+      //     setPage(newPage);
+      //   }
+      // } else if (filterData.length > pageSize) {
+      //   // setFilterData((prevFilterData) => {
+      //   //   const sortedData = [...prevFilterData].sort(
+      //   //     (a, b) => new Date(b.fileDate) - new Date(a.fileDate)
+      //   //   );
+      //   //   const truncatedData = sortedData.slice(0, pageSize);
+      //   //   return truncatedData;
+      //   // });
     }
   }, [filterData]);
 

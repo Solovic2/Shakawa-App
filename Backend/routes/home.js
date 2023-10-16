@@ -132,15 +132,6 @@ async function getSortedFilesAndRecordsByDate(
       };
     }
     // Filter Files and Compliant Table With searchQuery.
-    // if (reversedDate !== null) {
-    //   files = files.filter((file) =>
-    //     file.includes(
-    //       reversedDate[2] + "-" + reversedDate[1] + "-" + reversedDate[0]
-    //     )
-    //   );
-    // } else {
-    //   files = files.filter((file) => file.includes(searchQuery));
-    // }
     filteredFiles = [];
     const splitDate = searchQuery.split("-");
     files.forEach(async (element) => {
@@ -186,7 +177,7 @@ async function getSortedFilesAndRecordsByDate(
       }
       return "";
     });
-    const osFilesPaths = files.map((file) => file);
+    const osFilesPaths = filteredFiles.map((file) => file);
     // Get All Files UnSeen
     const filesNotUnSeen = await prisma.file.findMany({
       where: {
@@ -213,7 +204,9 @@ async function getSortedFilesAndRecordsByDate(
     const unSeenPaths = filesNotUnSeen.map((file) => file.path);
 
     // Filter out the files that match the unSeenPaths
-    const unSeenFiles = files.filter((file) => !unSeenPaths.includes(file));
+    const unSeenFiles = filteredFiles.filter(
+      (file) => !unSeenPaths.includes(file)
+    );
     // Filter out the complainTexts that match the unSeenPaths
     const unSeenComplainText = complaintDataTextNotUnSeen.filter((text) => {
       const regex = /(\d{4})-(\d{2})-(\d{2})/;
@@ -349,7 +342,7 @@ async function getSortedFilesAndRecordsByDate(
   if (filterBy === "ON_UNSEEN") {
     total = total - pathsWithFlagOne.length;
   } else {
-    total = countDB + files.length - pathsWithFlagOne.length;
+    total = countDB + filteredFiles.length - pathsWithFlagOne.length;
   }
   return { allRecords, total };
 }
