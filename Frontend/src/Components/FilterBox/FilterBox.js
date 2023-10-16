@@ -11,34 +11,47 @@ const FilterBox = ({ user, notify }) => {
   const navigate = useNavigate();
   const [values, setValues] = useState([]);
   const [filterData, setFilterData] = useState([]);
-  const [eventAction, setEventAction] = useState();
   const [inputValue, setInputValue] = useState("");
   const [inputError, setInputError] = useState(false);
   const [, , removeCookie] = useCookies(["user"]);
-  const [isToggled, setIsToggled] = useState(false);
+  const [selectedValue, setSelectedValue] = useState(undefined);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [searchQuery, setSearchQuery] = useState("*");
+  const [filterBy, setFilterBy] = useState(null);
+
   useEffect(() => {
-    fetchData(searchQuery, page, pageSize);
-  }, [searchQuery, page, pageSize]);
+    fetchData(filterBy, searchQuery, page, pageSize);
+  }, [searchQuery, filterBy, page, pageSize]);
   useEffect(() => {
     if (filterData.length === 0) {
       // If there are no items left on the current page, decide where to move
-      if(page === 1){
-        const newPage = page - 1;
-          setPage(newPage);
+      if (page === Math.ceil(total / pageSize) || page > 1) {
+        setPage(page - 1);
+      } else if (page === 1 && total !== 0) {
+        setPage(page + 1);
       }
-      else if (page > 1) {
-          // If there are previous pages, go back one page
-          const newPage = page - 1;
-          setPage(newPage);
-      } else if (page < total / pageSize) {
-        // If there are more pages ahead, go forward one page
-        const newPage = page + 1;
-        setPage(newPage);
-      }
+      // if (page === 1 && total > pageSize) {
+      //   const newPage = page - 1;
+      //   setPage(newPage);
+      // } else if (page > 1) {
+      //   // If there are previous pages, go back one page
+      //   const newPage = page - 1;
+      //   setPage(newPage);
+      // } else if (page < total / pageSize) {
+      //   // If there are more pages ahead, go forward one page
+      //   const newPage = page + 1;
+      //   setPage(newPage);
+      // }
+    } else if (filterData.length > pageSize) {
+      // setFilterData((prevFilterData) => {
+      //   const sortedData = [...prevFilterData].sort(
+      //     (a, b) => new Date(b.fileDate) - new Date(a.fileDate)
+      //   );
+      //   const truncatedData = sortedData.slice(0, pageSize);
+      //   return truncatedData;
+      // });
     }
   }, [filterData]);
 
@@ -79,6 +92,7 @@ const FilterBox = ({ user, notify }) => {
               if (card.path === message.data.path) {
                 return {
                   ...card,
+                  repliedBy: message.data.repliedBy,
                   info: message.data.info,
                   status: message.data.status,
                 };
@@ -144,9 +158,16 @@ const FilterBox = ({ user, notify }) => {
     };
   }, []);
 
-  const fetchData = (searchQuery, page, pageSize) => {
+  const fetchData = (filterBy, searchQuery, page, pageSize) => {
     fetch(
-      "http://localhost:9000/" + searchQuery + "/" + page + "/" + pageSize,
+      "http://localhost:9000/" +
+        filterBy +
+        "/" +
+        searchQuery +
+        "/" +
+        page +
+        "/" +
+        pageSize,
       {
         credentials: "include",
       }
@@ -166,7 +187,6 @@ const FilterBox = ({ user, notify }) => {
             setValues(allFiles);
             setFilterData(allFiles);
             setTotal(total);
-            if (!isToggled) setIsToggled(false);
           }
         }
       })
@@ -183,7 +203,7 @@ const FilterBox = ({ user, notify }) => {
     if (e.target.value === "") {
       setPage(1);
       setPageSize(5);
-      fetchData("*", page, pageSize);
+      setSearchQuery("*");
     }
   };
   const handleEnterPress = (e) => {
@@ -192,9 +212,11 @@ const FilterBox = ({ user, notify }) => {
       if (inputValue.match(/^\d{2}-\d{2}-\d{4}$/)) {
         const [day, month, year] = inputValue.split("-");
         const date = year + "-" + month + "-" + day;
+        setPage(1);
         setSearchQuery(date);
         setInputError(false);
       } else if (inputValue.match(/^0[0-9]{10}$/)) {
+        setPage(1);
         setSearchQuery(inputValue);
         setInputError(false);
       } else {
@@ -203,20 +225,25 @@ const FilterBox = ({ user, notify }) => {
       }
     }
   };
-  const handleClickToggleButton = (event) => {
-    event.preventDefault();
-    setIsToggled((isToggled) => !isToggled);
-    if (!isToggled) {
-      // execute function when button is toggled on
+
+  const handleFiltration = (value) => {
+    setSelectedValue(value);
+    if (value === undefined) {
+      setPage(1);
+      setFilterBy(null);
+      setSearchQuery("*");
+    } else if (value === "ON_TODAY") {
       const currentDate = new Date();
       const day = String(currentDate.getDate()).padStart(2, "0");
       const month = String(currentDate.getMonth() + 1).padStart(2, "0");
       const year = currentDate.getFullYear();
       const formattedDate = `${year}-${month}-${day}`;
       setPage(1);
+      setFilterBy(null);
       setSearchQuery(formattedDate);
     } else {
       setPage(1);
+      setFilterBy(value);
       setSearchQuery("*");
     }
   };
@@ -224,11 +251,11 @@ const FilterBox = ({ user, notify }) => {
     <>
       <FilterSearch
         user={user}
-        handleClickToggleButton={handleClickToggleButton}
         inputValue={inputValue}
         handleChange={handleChange}
         handleEnterPress={handleEnterPress}
-        isToggled={isToggled}
+        selectedValue={selectedValue}
+        handleFiltration={handleFiltration}
         isError={inputError}
       />
       <FilterCards

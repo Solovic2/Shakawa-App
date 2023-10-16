@@ -42,6 +42,9 @@ model Complaint {
 model File {
   id          Int        @id @default(autoincrement())
   path        String     @unique
+  mobile      String?
+  fileDate    String?
+  fileType    String?
   info        String?    @default("")
   flag        Int?       @default(0)
   status      Status?    @default(ON_UNSEEN)

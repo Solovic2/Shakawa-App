@@ -166,7 +166,12 @@ function FilterCards({
           setFilterData((prevData) => {
             const updatedData = prevData.map((card) => {
               if (card.path === path) {
-                return { ...card, info: data.info, status: data.status };
+                return {
+                  ...card,
+                  repliedBy: data.userId === null ? null : data.repliedBy,
+                  info: data.info,
+                  status: data.status,
+                };
               }
               return card;
             });
@@ -237,7 +242,7 @@ function FilterCards({
               return {
                 ...card,
                 info: data.info,
-                repliedBy: data.userId === null ? null : card.repliedBy,
+                repliedBy: data.userId === null ? null : data.repliedBy,
                 groupId: data.groupId,
                 status: data.status,
               };
