@@ -92,19 +92,13 @@ const FilterBox = ({ user, notify }) => {
       if (user.role !== "User") {
         if (message.type === "add") {
           setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
-          // setTotal((prev) => prev + 1);
+          setTotal((prev) => prev + 1);
           notify(1, (prev) => prev + 1);
         } else if (message.type === "delete") {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          // if (total > pageSize) {
-          //   setTotal((prev) => prev - 1);
-          // } else {
-          //   if (page === 1) setPage((prev) => prev + 1);
-          // }
           setFlagChange((prev) => !prev);
-
           notify(2, (prev) => prev - 1);
         } else if (message.type === "statusOrReply_changed") {
           setFilterData((prevData) => {
@@ -134,13 +128,7 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          // if (total > pageSize) {
-          //   setTotal((prev) => prev - 1);
-          // } else {
-          //   if (page === 1) setPage((prev) => prev + 1);
-          // }
           setFlagChange((prev) => !prev);
-
           notify(5, (prev) => prev - 1);
         }
         // When File Is Deleted From OS And this file was attached to group users it will be removed
@@ -151,11 +139,6 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          // if (total > pageSize) {
-          //   setTotal((prev) => prev - 1);
-          // } else {
-          //   if (page === 1) setPage((prev) => prev + 1);
-          // }
           setFlagChange((prev) => !prev);
           notify(2, (prev) => prev - 1);
         }
@@ -166,14 +149,14 @@ const FilterBox = ({ user, notify }) => {
           message.data.groupId !== message.prevGroupID
         ) {
           setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
-          // setTotal((prev) => prev + 1);
+          setTotal((prev) => prev + 1);
           notify(1, (prev) => prev + 1);
         }
         // When Manager/Admin Changed the group of file it deleted from the group users which had this file and added this file to the new group users
         else if (message.type === "user_delete_add") {
           if (message.data.groupId === user.groupId) {
             setFilterData((prevValues) => [...prevValues, message.data]); // add the new data to the previous values
-            // setTotal((prev) => prev + 1);
+            setTotal((prev) => prev + 1);
             notify(1, (prev) => prev + 1);
           } else if (
             message.prevGroupID !== null &&
@@ -182,10 +165,6 @@ const FilterBox = ({ user, notify }) => {
             setFilterData((prevValues) =>
               prevValues.filter((data) => data.path !== message.data.path)
             );
-            // if (total > pageSize) {
-            //   setTotal((prev) => prev - 1);
-            // } else {
-            // }
             setFlagChange((prev) => !prev);
             notify(4, (prev) => prev - 1);
           }
@@ -255,7 +234,7 @@ const FilterBox = ({ user, notify }) => {
         setPage(1);
         setSearchQuery(date);
         setInputError(false);
-      } else if (inputValue.match(/^0[0-9]{10}$/)) {
+      } else if (inputValue.match(/^[0-9]*$/)) {
         setPage(1);
         setSearchQuery(inputValue);
         setInputError(false);
