@@ -20,10 +20,10 @@ const FilterBox = ({ user, notify }) => {
   const [pageSize, setPageSize] = useState(5);
   const [searchQuery, setSearchQuery] = useState("*");
   const [filterBy, setFilterBy] = useState(null);
-
+  const [flagChange, setFlagChange] = useState(false);
   useEffect(() => {
     fetchData(filterBy, searchQuery, page, pageSize);
-  }, [searchQuery, filterBy, page, pageSize]);
+  }, [searchQuery, filterBy, page, pageSize, flagChange]);
 
   // Get Data From Database And Use WebSocket To Listen When File Added Or Deleted
   useEffect(() => {
@@ -35,6 +35,7 @@ const FilterBox = ({ user, notify }) => {
 
     ws.addEventListener("message", (event) => {
       const message = JSON.parse(event.data);
+      // setFlagChange(false);
       if (
         ((message.type === "user_changed_group" ||
           message.type === "user_changed_username_password" ||
@@ -56,11 +57,12 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          if (total > pageSize) {
-            setTotal((prev) => prev - 1);
-          } else {
-            setPage((prev) => prev + 1);
-          }
+          // if (total > pageSize) {
+          //   setTotal((prev) => prev - 1);
+          // } else {
+          //   if (page === 1) setPage((prev) => prev + 1);
+          // }
+          setFlagChange((prev) => !prev);
 
           notify(2, (prev) => prev - 1);
         } else if (message.type === "statusOrReply_changed") {
@@ -91,11 +93,13 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          if (total > pageSize) {
-            setTotal((prev) => prev - 1);
-          } else {
-            setPage((prev) => prev + 1);
-          }
+          // if (total > pageSize) {
+          //   setTotal((prev) => prev - 1);
+          // } else {
+          //   if (page === 1) setPage((prev) => prev + 1);
+          // }
+          setFlagChange((prev) => !prev);
+
           notify(5, (prev) => prev - 1);
         }
         // When File Is Deleted From OS And this file was attached to group users it will be removed
@@ -106,11 +110,12 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          if (total > pageSize) {
-            setTotal((prev) => prev - 1);
-          } else {
-            setPage((prev) => prev + 1);
-          }
+          // if (total > pageSize) {
+          //   setTotal((prev) => prev - 1);
+          // } else {
+          //   if (page === 1) setPage((prev) => prev + 1);
+          // }
+          setFlagChange((prev) => !prev);
           notify(2, (prev) => prev - 1);
         }
         // When File Is Attached To User It Appears Immediately to this user
@@ -136,11 +141,11 @@ const FilterBox = ({ user, notify }) => {
             setFilterData((prevValues) =>
               prevValues.filter((data) => data.path !== message.data.path)
             );
-            if (total > pageSize) {
-              setTotal((prev) => prev - 1);
-            } else {
-              setPage((prev) => prev + 1);
-            }
+            // if (total > pageSize) {
+            //   setTotal((prev) => prev - 1);
+            // } else {
+            // }
+            setFlagChange((prev) => !prev);
             notify(4, (prev) => prev - 1);
           }
         }
