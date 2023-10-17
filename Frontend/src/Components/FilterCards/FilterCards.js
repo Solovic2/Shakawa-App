@@ -15,6 +15,7 @@ function FilterCards({
   total,
   setFilterData,
   setValues,
+  setFlagChange,
   notify,
 }) {
   const infoContainerRef = useRef(null);
@@ -118,6 +119,7 @@ function FilterCards({
       handleClose(path);
       const updatedData = data.filter((data) => data.path !== deleteData.path);
       setFilterData(updatedData);
+      setFlagChange((prev) => !prev);
       notify(5, (prev) => prev - 1);
       // Remove the deleted card from the state
     } catch (error) {
