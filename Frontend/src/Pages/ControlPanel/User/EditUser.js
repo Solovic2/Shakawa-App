@@ -67,7 +67,7 @@ const EditUser = () => {
       })
       .then((data) => {
         setUsername(data.username || "");
-        setOldUsername(data.username || "")
+        setOldUsername(data.username || "");
         setPassword("");
         setRole(data.role || "User");
         setGroup(data.groupId || "");

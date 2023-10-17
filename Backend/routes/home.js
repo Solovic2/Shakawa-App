@@ -153,7 +153,7 @@ async function getSortedFilesAndRecordsByDate(
       where,
     });
   } else {
-    complaintDataTextNotUnSeen = await prisma.complaint.findMany({});
+    complaintDataTextNotUnSeen = await prisma.complaint.findMany();
   }
 
   if (filterBy === "ON_UNSEEN") {

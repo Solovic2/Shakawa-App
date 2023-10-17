@@ -152,8 +152,7 @@ const ControlPanel = () => {
                   <i
                     className="fa-solid fa-upload"
                     style={{ color: "#fff" }}
-                  ></i>
-                  {" "}
+                  ></i>{" "}
                   رفع الإكسيل شيت لقاعدة البيانات
                 </>
               }
@@ -167,12 +166,25 @@ const ControlPanel = () => {
               }
               onHide={() => setShow([false, "", ""])}
             >
-
-              <Modal.Body style={{ textAlign: "center", fontSize: "50px", marginTop: "25px" }}>
+              <Modal.Body
+                style={{
+                  textAlign: "center",
+                  fontSize: "50px",
+                  marginTop: "25px",
+                }}
+              >
                 {show[1] === "success" ? (
-                  <i className="fa-regular fa-circle-check fa-2xl" style={{color: "#207e27" }}></i>
-                ) : show[1] === "danger" &&  (
-                  <i className="fa-solid fa-circle-exclamation fa-2xl" style={{color: "#ff0000" }}></i>
+                  <i
+                    className="fa-regular fa-circle-check fa-2xl"
+                    style={{ color: "#207e27" }}
+                  ></i>
+                ) : (
+                  show[1] === "danger" && (
+                    <i
+                      className="fa-solid fa-circle-exclamation fa-2xl"
+                      style={{ color: "#ff0000" }}
+                    ></i>
+                  )
                 )}
               </Modal.Body>
               <Modal.Footer style={{ margin: "auto", fontSize: "20px" }}>

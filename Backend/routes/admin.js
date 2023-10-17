@@ -370,7 +370,7 @@ router.post("/upload-excel-sheet", upload.single("file"), async (req, res) => {
     // Now, insert the data into your database using Prisma
     const createRecords = jsonData.map((row) => {
       // Format Date [التاريخ] from serial number  to dd-mm-yyy
-      const date = new Date((row['التاريخ'] - 25569) * 86400 * 1000);
+      const date = new Date((parseInt(row["التاريخ"]) - 25569) * 86400 * 1000);
       let type = "Undefined";
       switch (row["الصفة"] + "") {
         case "عسكرى":
@@ -393,7 +393,7 @@ router.post("/upload-excel-sheet", upload.single("file"), async (req, res) => {
           type: type + "",
           email: row["البريد"] ? row["البريد"] + "" : null,
           mobileNumber: "0" + row["التليفون"],
-          SID: row["الرقم العسكرى"] ?  row["الرقم العسكرى"] + "" : null,
+          SID: row["الرقم العسكرى"] ? row["الرقم العسكرى"] + "" : null,
           MID: row["رقم العضوية"] ? row["رقم العضوية"] + "" : null,
           complainText: row["الشكوى"] + "",
           complainDate: date,
@@ -407,7 +407,10 @@ router.post("/upload-excel-sheet", upload.single("file"), async (req, res) => {
     res.send(jsonData.length > 0);
   } catch (error) {
     console.error(error);
-    res.status(400).send({message: "حدثت مشكلة اثناء تحميل الإكسيل شيت لقاعدة البيانات، الرجاء التأكد إذا كان الإكسيل شيت صحيح."});
+    res.status(400).send({
+      message:
+        "حدثت مشكلة اثناء تحميل الإكسيل شيت لقاعدة البيانات، الرجاء التأكد إذا كان الإكسيل شيت صحيح.",
+    });
   }
 });
 module.exports = router;

@@ -21,7 +21,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
 // Registration
 app.use("/registration", require("./routes/registration"));
 
@@ -31,16 +30,13 @@ app.use("/", require("./routes/home"));
 // Admin Panel
 app.use("/admin", require("./routes/admin"));
 
-
-try{
-// start the server
-app.listen(9000, () => {
-  console.log("Server started on port 9000");
-});
-}catch(error){
-  if(error.code === 'EADDRINUSE'){
+try {
+  // start the server
+  app.listen(9000, () => {
+    console.log("Server started on port 9000");
+  });
+} catch (error) {
+  if (error.code === "EADDRINUSE") {
     console.log("Port In Use");
   }
-  
 }
-

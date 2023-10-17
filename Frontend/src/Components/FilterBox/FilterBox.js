@@ -20,52 +20,12 @@ const FilterBox = ({ user, notify }) => {
   const [pageSize, setPageSize] = useState(5);
   const [searchQuery, setSearchQuery] = useState("*");
   const [filterBy, setFilterBy] = useState(null);
-  const [flagChange, setFlagChange] = useState(false);
+  const [firstTime, setFirstTime] = useState(true);
+
   useEffect(() => {
     fetchData(filterBy, searchQuery, page, pageSize);
-  }, [searchQuery, filterBy, page, pageSize, flagChange]);
-  useEffect(() => {
-    // if (filterData.length === 0) {
-    //   setFlagChange((prev) => !prev);
-    // } else
-    if (filterData.length > pageSize) {
-      setFilterData((prevFilterData) => {
-        const sortedData = [...prevFilterData].sort(
-          (a, b) => new Date(b.fileDate) - new Date(a.fileDate)
-        );
-        const truncatedData = sortedData.slice(0, pageSize);
-        return truncatedData;
-      });
-    }
-    //   // If there are no items left on the current page, decide where to move
-    //   if (page === Math.ceil(total / pageSize) || page > 1) {
-    //     setPage(page - 1);
-    //   } else if (page === 1 && total !== 0) {
-    //     setPage(page + 1);
-    //   }
-    //   //   if (page === 1 && total > pageSize) {
-    //   //     const newPage = page - 1;
-    //   //     setPage(newPage);
-    //   //   } else if (page > 1) {
-    //   //     // If there are previous pages, go back one page
-    //   //     const newPage = page - 1;
-    //   //     setPage(newPage);
-    //   //   } else if (page < total / pageSize) {
-    //   //     // If there are more pages ahead, go forward one page
-    //   //     const newPage = page + 1;
-    //   //     setPage(newPage);
-    //   //   }
-    // } else if (filterData.length > pageSize) {
-    //   console.log("SSS");
-    //   setFilterData((prevFilterData) => {
-    //     const sortedData = [...prevFilterData].sort(
-    //       (a, b) => new Date(b.fileDate) - new Date(a.fileDate)
-    //     );
-    //     const truncatedData = sortedData.slice(0, pageSize);
-    //     return truncatedData;
-    //   });
-    // }
-  }, [filterData]);
+  }, [searchQuery, filterBy, page, pageSize]);
+
   // Get Data From Database And Use WebSocket To Listen When File Added Or Deleted
   useEffect(() => {
     const ws = new WebSocket("ws://localhost:9099");
@@ -76,7 +36,6 @@ const FilterBox = ({ user, notify }) => {
 
     ws.addEventListener("message", (event) => {
       const message = JSON.parse(event.data);
-      // setFlagChange(false);
       if (
         ((message.type === "user_changed_group" ||
           message.type === "user_changed_username_password" ||
@@ -98,7 +57,11 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          setFlagChange((prev) => !prev);
+          if (total <= pageSize && total !== 0) {
+            window.location.reload();
+          } else {
+            setTotal((prev) => prev - 1);
+          }
           notify(2, (prev) => prev - 1);
         } else if (message.type === "statusOrReply_changed") {
           setFilterData((prevData) => {
@@ -128,7 +91,11 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          setFlagChange((prev) => !prev);
+          if (total <= pageSize && total !== 0) {
+            window.location.reload();
+          } else {
+            setTotal((prev) => prev - 1);
+          }
           notify(5, (prev) => prev - 1);
         }
         // When File Is Deleted From OS And this file was attached to group users it will be removed
@@ -139,7 +106,11 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          setFlagChange((prev) => !prev);
+          if (total <= pageSize && total !== 0) {
+            window.location.reload();
+          } else {
+            setTotal((prev) => prev - 1);
+          }
           notify(2, (prev) => prev - 1);
         }
         // When File Is Attached To User It Appears Immediately to this user
@@ -165,7 +136,11 @@ const FilterBox = ({ user, notify }) => {
             setFilterData((prevValues) =>
               prevValues.filter((data) => data.path !== message.data.path)
             );
-            setFlagChange((prev) => !prev);
+            if (total <= pageSize && total !== 0) {
+              window.location.reload();
+            } else {
+              setTotal((prev) => prev - 1);
+            }
             notify(4, (prev) => prev - 1);
           }
         }
@@ -176,7 +151,24 @@ const FilterBox = ({ user, notify }) => {
       ws.close();
     };
   }, []);
+  useEffect(() => {
+    if (firstTime) {
+      setFirstTime(false);
+      return;
+    }
 
+    if (filterData.length === 0 && !firstTime && total !== 0) {
+      window.location.reload();
+    } else if (filterData.length > pageSize) {
+      setFilterData((prevFilterData) => {
+        const sortedData = [...prevFilterData].sort(
+          (a, b) => new Date(b.fileDate) - new Date(a.fileDate)
+        );
+        const truncatedData = sortedData.slice(0, pageSize);
+        return truncatedData;
+      });
+    }
+  }, [filterData]);
   const fetchData = (filterBy, searchQuery, page, pageSize) => {
     fetch(
       "http://localhost:9000/" +
@@ -286,7 +278,6 @@ const FilterBox = ({ user, notify }) => {
         setPage={setPage}
         setFilterData={setFilterData}
         setValues={setValues}
-        setFlagChange={setFlagChange}
         notify={notify}
       />
       {total > pageSize && (

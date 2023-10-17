@@ -70,9 +70,15 @@ const ModalComponent = ({
                         <Row>
                           {dbData.type !== null && (
                             <>
-                              <Col xs={3} className="labels-font"  >الصفة :</Col>
-                              <Col xs={9} className="labels-font" >
-                                {dbData.type === "Soldier" ? "عسكري" : dbData.type === "Civil" ? "مدني" : "غير محدد"}
+                              <Col xs={3} className="labels-font">
+                                الصفة :
+                              </Col>
+                              <Col xs={9} className="labels-font">
+                                {dbData.type === "Soldier"
+                                  ? "عسكري"
+                                  : dbData.type === "Civil"
+                                  ? "مدني"
+                                  : "غير محدد"}
                               </Col>
                             </>
                           )}
@@ -80,9 +86,13 @@ const ModalComponent = ({
                         {dbData.type === "Soldier" && (
                           <>
                             <Row>
-                              <Col xs={3}className="labels-font"  >رقم العضوية :</Col>
+                              <Col xs={3} className="labels-font">
+                                رقم العضوية :
+                              </Col>
                               <Col xs={2}>{dbData.MID}</Col>
-                              <Col xs={4} className="labels-font"  >الرقم العسكري :</Col>
+                              <Col xs={4} className="labels-font">
+                                الرقم العسكري :
+                              </Col>
                               <Col xs={3}>{dbData.SID}</Col>
                             </Row>
                           </>
@@ -90,23 +100,35 @@ const ModalComponent = ({
                         {dbData.name !== null && (
                           <>
                             <Row>
-                              <Col xs={2} className="labels-font" >الإسم :</Col>
-                              <Col xs={10} className="labels-font">{dbData.name}</Col>
+                              <Col xs={2} className="labels-font">
+                                الإسم :
+                              </Col>
+                              <Col xs={10} className="labels-font">
+                                {dbData.name}
+                              </Col>
                             </Row>
                           </>
                         )}
                         {dbData.email !== null && (
                           <>
                             <Row>
-                              <Col xs={4} className="labels-font" >البريد الإلكتروني :</Col>
+                              <Col xs={4} className="labels-font">
+                                البريد الإلكتروني :
+                              </Col>
                               <Col xs={8}>{dbData.email}</Col>
                             </Row>
                           </>
                         )}
 
                         <Row>
-                          <Col xs={3} className="fs-5">الشكوى :</Col>
-                          <Col xs={9} className="fs-5">{dbData.complainText ? dbData.complainText : "لا توجد شكوى !" }</Col>
+                          <Col xs={3} className="fs-5">
+                            الشكوى :
+                          </Col>
+                          <Col xs={9} className="fs-5">
+                            {dbData.complainText
+                              ? dbData.complainText
+                              : "لا توجد شكوى !"}
+                          </Col>
                         </Row>
                       </Container>
                     </>

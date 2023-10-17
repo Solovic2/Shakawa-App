@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react'
-import "../ControlPanel.css"
-import { useNavigate } from 'react-router-dom';
-import Table from '../../../Components/ControlPanel/Table';
-import AdminPanel from '../../../Components/ControlPanel/AdminPanel';
-import Cookies from 'js-cookie';
-import jwt_decode from 'jwt-decode';
-import NavBarList from '../../../Components/CommonComponents/NavBarList';
+import React, { useEffect, useState } from "react";
+import "../ControlPanel.css";
+import { useNavigate } from "react-router-dom";
+import Table from "../../../Components/ControlPanel/Table";
+import AdminPanel from "../../../Components/ControlPanel/AdminPanel";
+import Cookies from "js-cookie";
+import jwt_decode from "jwt-decode";
+import NavBarList from "../../../Components/CommonComponents/NavBarList";
 const Groups = () => {
-  const [groups, setGroups] = useState([])
-  const [user, setUser] = useState(null)
+  const [groups, setGroups] = useState([]);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const token = Cookies.get('user')
+  const token = Cookies.get("user");
   // Check Authorization
   useEffect(() => {
     if (token) {
@@ -18,54 +18,51 @@ const Groups = () => {
         const decodedToken = jwt_decode(token);
         setUser(decodedToken);
       } catch (error) {
-        console.log('Invalid token:', error);
+        console.log("Invalid token:", error);
       }
     } else {
       navigate("/");
       return;
     }
-}, [token, navigate])
+  }, [token, navigate]);
 
-useEffect(() => {
-  if(user){
-    if( user.role !== 'Admin' ){
-      navigate("/");
-      return;
-    }
-  }
-}, [user, navigate]);
   useEffect(() => {
-
-    fetch("http://localhost:9000/admin/groups", {
-      credentials: 'include'
-    }).then(response => {
-      if (response.ok) {
-        return response.json();
+    if (user) {
+      if (user.role !== "Admin") {
+        navigate("/");
+        return;
       }
+    }
+  }, [user, navigate]);
+  useEffect(() => {
+    fetch("http://localhost:9000/admin/groups", {
+      credentials: "include",
     })
-      .then(data => setGroups(data))
-      .catch(error => {
-        console.error(error.message);
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        }
       })
-  }, [navigate])
+      .then((data) => setGroups(data))
+      .catch((error) => {
+        console.error(error.message);
+      });
+  }, [navigate]);
 
   const handleClick = (path) => {
-
-    navigate(path,{
-      state : {user : user}
-    })
-  }
-
+    navigate(path, {
+      state: { user: user },
+    });
+  };
 
   const handleBack = () => {
-      navigate('/')
-  }
+    navigate("/");
+  };
   const handleEdit = (groupID) => {
     navigate(`/control-panel-admin/groups/edit/${groupID}`, {
-      state: { user: user }
-    })
-  }
-
+      state: { user: user },
+    });
+  };
 
   const handleDelete = async (id) => {
     try {
@@ -73,7 +70,7 @@ useEffect(() => {
         "http://localhost:9000/admin/delete-group/" + id,
         {
           method: "DELETE",
-          credentials: 'include',
+          credentials: "include",
         }
       );
       if (!response.ok) {
@@ -83,30 +80,38 @@ useEffect(() => {
         setGroups(updatedGroups);
       }
 
-
       // Remove the deleted card from the state
     } catch (error) {
       console.error("Error deleting card:", error);
     }
-  }
+  };
 
-
-  if (!user || (user && user.role !== "Admin") ) {
+  if (!user || (user && user.role !== "Admin")) {
     return null;
   }
-  
+
   return (
     <>
-      <div className='container-body'>
-
+      <div className="container-body">
         <AdminPanel>
-          <NavBarList user = {user} isHomePage={false} users ={null} handleBack = {handleBack} handleClick = {handleClick} />
-          <Table users={null} groups={groups}  handleClick = {handleClick}  handleEdit={handleEdit} handleDelete={handleDelete} />
+          <NavBarList
+            user={user}
+            isHomePage={false}
+            users={null}
+            handleBack={handleBack}
+            handleClick={handleClick}
+          />
+          <Table
+            users={null}
+            groups={groups}
+            handleClick={handleClick}
+            handleEdit={handleEdit}
+            handleDelete={handleDelete}
+          />
         </AdminPanel>
       </div>
     </>
+  );
+};
 
-  )
-}
-
-export default Groups
+export default Groups;
