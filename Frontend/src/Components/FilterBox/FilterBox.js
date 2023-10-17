@@ -56,7 +56,12 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          setTotal((prev) => prev - 1);
+          if (total > pageSize) {
+            setTotal((prev) => prev - 1);
+          } else {
+            setPage((prev) => prev + 1);
+          }
+
           notify(2, (prev) => prev - 1);
         } else if (message.type === "statusOrReply_changed") {
           setFilterData((prevData) => {
@@ -86,7 +91,11 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          setTotal((prev) => prev - 1);
+          if (total > pageSize) {
+            setTotal((prev) => prev - 1);
+          } else {
+            setPage((prev) => prev + 1);
+          }
           notify(5, (prev) => prev - 1);
         }
         // When File Is Deleted From OS And this file was attached to group users it will be removed
@@ -97,7 +106,11 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          setTotal((prev) => prev - 1);
+          if (total > pageSize) {
+            setTotal((prev) => prev - 1);
+          } else {
+            setPage((prev) => prev + 1);
+          }
           notify(2, (prev) => prev - 1);
         }
         // When File Is Attached To User It Appears Immediately to this user
@@ -123,7 +136,11 @@ const FilterBox = ({ user, notify }) => {
             setFilterData((prevValues) =>
               prevValues.filter((data) => data.path !== message.data.path)
             );
-            setTotal((prev) => prev - 1);
+            if (total > pageSize) {
+              setTotal((prev) => prev - 1);
+            } else {
+              setPage((prev) => prev + 1);
+            }
             notify(4, (prev) => prev - 1);
           }
         }
@@ -135,7 +152,6 @@ const FilterBox = ({ user, notify }) => {
     };
   }, []);
   useEffect(() => {
-    console.log(filterData.length, total);
     if (filterData.length === 0) {
       // If there are no items left on the current page, decide where to move
       if (page === Math.ceil(total / pageSize) || page > 1) {
@@ -156,6 +172,7 @@ const FilterBox = ({ user, notify }) => {
       //     setPage(newPage);
       //   }
     } else if (filterData.length > pageSize) {
+      console.log("SSS");
       setFilterData((prevFilterData) => {
         const sortedData = [...prevFilterData].sort(
           (a, b) => new Date(b.fileDate) - new Date(a.fileDate)
