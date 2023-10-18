@@ -2,7 +2,7 @@
 Shakawa describes something called a “Shakwa” which is the voice note or text that a customer writes.
 This application was created to manage this "Shakwa" and listen or read it and send it to a department (group) to respond to this custom shakwa.
 # How This Project Work ?
-It is based on reading files from OS and reading complaint script logs from database which is loaded as Excel sheet from front end and displayed to admin/admin users and users can forward this file to any user group having 'User' role, this user should see the files Just attached in his group and listen or read this file and reply to this file.
+It is based on reading files from OS and reading complaint script logs from database which is loaded as Excel sheet from front end and displayed to Manager/Admin users and users can forward this file to any user group having 'User' role, this user should see the files Just attached in his group and listen or read this file and reply to this file.
 There is a web socket to maintain real-time notifications between the backend and frontend when pages are rendered.
 
 # What Is Used In This Project ? 
