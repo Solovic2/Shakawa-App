@@ -661,18 +661,21 @@ router.post("/attach-file-to-group", requireAuth, async (req, res) => {
     let updateData = {};
     const isNotSameGroupID =
       existingFile && existingFile.groupId !== +data.group;
-    if (isNotSameGroupID) {
-      updateData = {
-        groupId: +data.group,
-        info: "",
-        userId: null,
-        status: Status.ON_STUDY,
-      };
-    } else {
-      updateData = {
-        groupId: +data.group,
-      };
+    if (existingFile) {
+      if (isNotSameGroupID) {
+        updateData = {
+          groupId: +data.group,
+          info: "",
+          userId: null,
+          status: Status.ON_STUDY,
+        };
+      } else {
+        updateData = {
+          groupId: +data.group,
+        };
+      }
     }
+
     const splitData = splitPath(data.path);
     const updateOrAddFile = await prisma.file.upsert({
       where: {
@@ -694,7 +697,6 @@ router.post("/attach-file-to-group", requireAuth, async (req, res) => {
         user: true,
       },
     });
-
     let record = null;
     if (data.record !== null) {
       record = await prisma.complaint.findUnique({
