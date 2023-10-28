@@ -1,5 +1,4 @@
 .card-container {
-  margin-top: 30px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -32,14 +31,13 @@
   right: 0;
   margin: 5px;
 }
-.card-status{
+.card-status {
   position: absolute;
   top: 0;
   left: 0;
   margin: 10px 0px;
- 
 }
-.card-status span{
+.card-status span {
   border-radius: 0px 10px 10px 0px;
   width: 100px;
   font-size: 15px;
@@ -105,8 +103,8 @@
   color: white;
   border: none;
 }
-.attach-file .edit-button button{
-    float: left;
+.attach-file .edit-button button {
+  float: left;
 }
 .scrollable-container {
   display: flex;
@@ -124,7 +122,7 @@
   font-size: 18px;
 }
 
-.reply-and-edit span{
+.reply-and-edit span {
   border-radius: 5px;
   width: 100px;
 }
@@ -168,12 +166,12 @@
   direction: rtl;
 }
 
-.form-submit form{
+.form-submit form {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
 }
-.form-submit form select{
+.form-submit form select {
   padding: 5px;
   font-size: 16px;
   border: 1px solid #ccc;
@@ -186,7 +184,7 @@
   padding: 5px;
   font-size: 14px;
   height: 30px;
-  margin: 10px 0px; 
+  margin: 10px 0px;
 }
 
 .deleteBtn i {
@@ -195,7 +193,7 @@
 }
 
 @media (max-width: 320px) {
-   audio {
+  audio {
     width: 250px;
   }
 }

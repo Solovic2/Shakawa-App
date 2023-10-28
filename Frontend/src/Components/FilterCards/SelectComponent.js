@@ -73,7 +73,7 @@ const SelectComponent = ({
           : (e) => e.target.setCustomValidity("برجاء اختيار حالة الطلب")
       }
       onInput={(e) => {
-        e.target.setCustomValidity('');
+        e.target.setCustomValidity("");
       }}
     >
       {groups ? (

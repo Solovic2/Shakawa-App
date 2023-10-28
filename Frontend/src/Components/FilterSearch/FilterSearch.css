@@ -1,8 +1,23 @@
 .searchBar {
   display: flex;
-  height: 40px;
+  /* height: 40px; */
   margin-top: 10px;
   justify-content: center;
+}
+.searchBar > .row {
+  width: 100%;
+  direction: rtl;
+}
+.summary {
+  width: 50%;
+  direction: rtl;
+}
+.searchBar form {
+  width: 100%;
+  padding: 50px;
+}
+.searchBar form .row {
+  justify-content: end;
 }
 .selector {
   width: 120px;
@@ -42,15 +57,7 @@
   border-color: #5c9ded;
   box-shadow: 0 2px 5px rgba(92, 157, 237, 0.25);
 }
-.search {
-  width: 300px;
-  height: 40px;
-  padding: 10px;
-  border-radius: 20px;
-  border: none;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
-  font-size: 16px;
-}
+
 .toggleBtn {
   width: 100px !important;
   margin-right: 10px;

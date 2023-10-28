@@ -187,12 +187,12 @@ async function getSortedFilesAndRecordsByDate(
         OR: [
           {
             path: {
-              in: complaintPaths,
+              in: osFilesPaths,
             },
           },
           {
             path: {
-              in: osFilesPaths,
+              in: complaintPaths,
             },
           },
         ],
@@ -338,12 +338,16 @@ async function getSortedFilesAndRecordsByDate(
     (record) => !pathsWithFlagOne.includes(record.path)
   );
   allRecords = allRecords.slice(skip, skip + parseInt(pageSize));
-
-  if (filterBy === "ON_UNSEEN") {
-    total = total - pathsWithFlagOne.length;
+  if (allRecords.length > 0) {
+    if (filterBy === "ON_UNSEEN") {
+      total = total - pathsWithFlagOne.length;
+    } else {
+      total = countDB + filteredFiles.length - pathsWithFlagOne.length;
+    }
   } else {
-    total = countDB + filteredFiles.length - pathsWithFlagOne.length;
+    total = 0;
   }
+
   return { allRecords, total };
 }
 
@@ -551,6 +555,96 @@ function getContentType(fileName) {
       return "application/octet-stream";
   }
 }
+
+async function getSummary(user) {
+  let allItems = {
+    onTotal: {
+      _count: {
+        status: 0,
+      },
+      status: "ON_TOTAL",
+    },
+    onHold: {
+      _count: {
+        status: 0,
+      },
+      status: "ON_HOLD",
+    },
+    onStudy: {
+      _count: {
+        status: 0,
+      },
+      status: "ON_STUDY",
+    },
+    onSolve: {
+      _count: {
+        status: 0,
+      },
+      status: "ON_SOLVE",
+    },
+  };
+
+  let dbStatus = await prisma.file.groupBy({
+    where: {
+      flag: 0,
+    },
+    by: ["status"],
+    _count: {
+      status: true,
+    },
+  });
+  let countTotalStatus = 0;
+  dbStatus.forEach((element) => {
+    countTotalStatus += element._count.status;
+  });
+  if (user !== Role.User) {
+    const files = await fs.promises.readdir(folderPath);
+    const allHiddenFiles = await prisma.file.count({
+      where: {
+        flag: 1,
+      },
+    });
+    const allDBComplaintTable = await prisma.complaint.count();
+
+    allItems.onTotal._count.status =
+      files.length + allDBComplaintTable - allHiddenFiles; // Update the count to the desired value
+
+    let countUnSeenStatus = allItems.onTotal._count.status;
+    // Check if there is an element with status "ON_UNSEEN" in the dbStatus array
+    const onUnseenElement = dbStatus.find(
+      (element) => element.status === "ON_UNSEEN"
+    );
+
+    if (onUnseenElement) {
+      // If "ON_UNSEEN" element is found, update item's _count.status property
+      countUnSeenStatus += onUnseenElement._count.status;
+    }
+
+    allItems.onUnSeen = {
+      _count: {
+        status: countUnSeenStatus - countTotalStatus,
+      },
+      status: "ON_UNSEEN",
+    };
+  } else {
+    allItems.onTotal._count.status = countTotalStatus; // Update the count to the desired value
+  }
+  for (let key in allItems) {
+    if (allItems.hasOwnProperty(key)) {
+      // Access the current property
+      const element = allItems[key];
+      const matchingItem = dbStatus.find(
+        (item) => item.status === element.status
+      );
+      if (matchingItem) {
+        // Update the _count value in the matching item
+        element._count.status += matchingItem._count.status;
+      }
+    }
+  }
+
+  return Object.values(allItems);
+}
 // create a route to get data from the database
 router.get(
   "/:filterBy/:searchQuery/:page/:pageSize",
@@ -589,6 +683,11 @@ router.get(
   }
 );
 
+router.get("/summary", requireAuth, async (req, res) => {
+  const { user } = req;
+  const summary = await getSummary(user.role);
+  res.send(summary);
+});
 // API To Get Groups
 router.get("/groups", async (req, res) => {
   const data = await prisma.group.findMany();
@@ -787,6 +886,7 @@ router.put("/update-complain/:path", requireAuth, async (req, res) => {
 router.post("/delete-complain/:path", requireAuth, async (req, res) => {
   try {
     const path = req.params.path;
+    const splitData = splitPath(path);
     const hideFileOrAddItHidden = await prisma.file.upsert({
       where: {
         path: path,
@@ -797,6 +897,9 @@ router.post("/delete-complain/:path", requireAuth, async (req, res) => {
       create: {
         path: path,
         info: "",
+        mobile: splitData[0],
+        fileDate: splitData[1],
+        fileType: splitData[2],
         flag: 1,
       },
     });

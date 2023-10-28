@@ -15,7 +15,7 @@ const FilterBox = ({ user, notify }) => {
   const [inputError, setInputError] = useState(false);
   const [, , removeCookie] = useCookies(["user"]);
   const [selectedValue, setSelectedValue] = useState(undefined);
-  const [total, setTotal] = useState(0);
+  const [total, setTotal] = useState(-1);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [searchQuery, setSearchQuery] = useState("*");
@@ -57,7 +57,7 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          if (total <= pageSize && total !== 0) {
+          if (total <= pageSize && total > 0) {
             window.location.reload();
           } else {
             setTotal((prev) => prev - 1);
@@ -91,7 +91,7 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          if (total <= pageSize && total !== 0) {
+          if (total <= pageSize && total > 0) {
             window.location.reload();
           } else {
             setTotal((prev) => prev - 1);
@@ -106,7 +106,7 @@ const FilterBox = ({ user, notify }) => {
           setFilterData((prevValues) =>
             prevValues.filter((data) => data.path !== message.data.path)
           );
-          if (total <= pageSize && total !== 0) {
+          if (total <= pageSize && total > 0) {
             window.location.reload();
           } else {
             setTotal((prev) => prev - 1);
@@ -136,7 +136,7 @@ const FilterBox = ({ user, notify }) => {
             setFilterData((prevValues) =>
               prevValues.filter((data) => data.path !== message.data.path)
             );
-            if (total <= pageSize && total !== 0) {
+            if (total <= pageSize && total > 0) {
               window.location.reload();
             } else {
               setTotal((prev) => prev - 1);
@@ -156,8 +156,7 @@ const FilterBox = ({ user, notify }) => {
       setFirstTime(false);
       return;
     }
-
-    if (filterData.length === 0 && !firstTime && total !== 0) {
+    if (filterData.length === 0 && !firstTime && total !== -1) {
       window.location.reload();
     } else if (filterData.length > pageSize) {
       setFilterData((prevFilterData) => {
