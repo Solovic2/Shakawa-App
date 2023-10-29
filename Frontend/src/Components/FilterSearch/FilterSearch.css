@@ -2,6 +2,7 @@
   display: flex;
   /* height: 40px; */
   margin-top: 10px;
+  margin-bottom: 30px;
   justify-content: center;
 }
 .searchBar > .row {
@@ -9,15 +10,16 @@
   direction: rtl;
 }
 .summary {
-  width: 50%;
+  width: 80%;
   direction: rtl;
+  margin: 0px auto;
 }
 .searchBar form {
   width: 100%;
-  padding: 50px;
+  margin-top: 100px;
 }
 .searchBar form .row {
-  justify-content: end;
+  justify-content: start;
 }
 .selector {
   width: 120px;

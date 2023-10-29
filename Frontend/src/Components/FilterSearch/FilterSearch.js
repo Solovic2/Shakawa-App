@@ -66,43 +66,7 @@ const FilterSearch = (props) => {
     <>
       <div className="searchBar">
         <Row>
-          <Col xs={9} md={8}>
-            <Form>
-              <Row>
-                <Col xs={3} md={4}>
-                  <Form.Group>
-                    <Form.Control
-                      type="search"
-                      placeholder="بحث بالتاريخ ورقم الهاتف"
-                      value={inputValue}
-                      onKeyDown={handleEnterPress}
-                      onChange={handleChange}
-                      isInvalid={isError}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      الرجاء التأكد بكتابة رقم التليفون أو التاريخ على صورة
-                      يوم-شهر-سنة
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Col>
-                <Col xs={3} md={4}>
-                  <Select
-                    allowClear
-                    style={{
-                      textAlign: "right",
-                      direction: "rtl",
-                      width: "100%",
-                    }}
-                    placeholder="تصنيف (فلتر)"
-                    defaultValue={selectedValue}
-                    onChange={handleFiltration}
-                    options={options}
-                  />
-                </Col>
-              </Row>
-            </Form>
-          </Col>
-          <Col xs={3} md={4}>
+          <Col xs={3} md={3}>
             {loading ? (
               <>
                 <SpinnerComponent variant="primary" />
@@ -139,11 +103,12 @@ const FilterSearch = (props) => {
                       }
                       return (
                         <ListGroup.Item
+                          variant="dark"
                           key={index}
                           className="d-flex justify-content-between align-items-start"
                         >
                           <div className="ms-2 mr-auto">
-                            <div className="fw-bold">{statusValue}</div>
+                            <div className="fw-bold fs-5">{statusValue}</div>
                           </div>
                           <Badge bg="primary" pill>
                             {element._count.status}
@@ -155,6 +120,42 @@ const FilterSearch = (props) => {
                 </div>
               </>
             )}
+          </Col>
+          <Col xs={9} md={8}>
+            <Form>
+              <Row>
+                <Col xs={3} md={4}>
+                  <Form.Group>
+                    <Form.Control
+                      type="search"
+                      placeholder="بحث بالتاريخ ورقم الهاتف"
+                      value={inputValue}
+                      onKeyDown={handleEnterPress}
+                      onChange={handleChange}
+                      isInvalid={isError}
+                    />
+                    <Form.Control.Feedback type="invalid">
+                      الرجاء التأكد بكتابة رقم التليفون أو التاريخ على صورة
+                      يوم-شهر-سنة
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </Col>
+                <Col xs={3} md={4}>
+                  <Select
+                    allowClear
+                    style={{
+                      textAlign: "right",
+                      direction: "rtl",
+                      width: "100%",
+                    }}
+                    placeholder="تصنيف (فلتر)"
+                    defaultValue={selectedValue}
+                    onChange={handleFiltration}
+                    options={options}
+                  />
+                </Col>
+              </Row>
+            </Form>
           </Col>
         </Row>
       </div>
