@@ -87,7 +87,6 @@ const FilterSearch = (props) => {
                 </Col>
                 <Col xs={3} md={4}>
                   <Select
-                    showSearch
                     allowClear
                     style={{
                       textAlign: "right",
@@ -111,7 +110,7 @@ const FilterSearch = (props) => {
             ) : (
               <>
                 <div className="summary">
-                  <ListGroup as="ul">
+                  <ListGroup>
                     {summary?.map((element, index) => {
                       let statusValue = "لم تقرأ / تسمع بعد";
                       switch (element.status) {
@@ -139,20 +138,17 @@ const FilterSearch = (props) => {
                           break;
                       }
                       return (
-                        <>
-                          <ListGroup.Item
-                            key={index}
-                            as="li"
-                            className="d-flex justify-content-between align-items-start"
-                          >
-                            <div className="ms-2 mr-auto">
-                              <div className="fw-bold">{statusValue}</div>
-                            </div>
-                            <Badge bg="primary" pill>
-                              {element._count.status}
-                            </Badge>
-                          </ListGroup.Item>
-                        </>
+                        <ListGroup.Item
+                          key={index}
+                          className="d-flex justify-content-between align-items-start"
+                        >
+                          <div className="ms-2 mr-auto">
+                            <div className="fw-bold">{statusValue}</div>
+                          </div>
+                          <Badge bg="primary" pill>
+                            {element._count.status}
+                          </Badge>
+                        </ListGroup.Item>
                       );
                     })}
                   </ListGroup>
