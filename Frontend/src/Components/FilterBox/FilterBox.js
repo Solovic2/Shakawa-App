@@ -6,7 +6,7 @@ import FilterSearch from "../FilterSearch/FilterSearch";
 import FilterCards from "../FilterCards/FilterCards";
 import { useCookies } from "react-cookie";
 import { Pagination } from "antd";
-
+import SpinnerComponent from "../CommonComponents/Spinner";
 const FilterBox = ({ user, notify }) => {
   const navigate = useNavigate();
   const [values, setValues] = useState([]);
@@ -21,7 +21,7 @@ const FilterBox = ({ user, notify }) => {
   const [searchQuery, setSearchQuery] = useState("*");
   const [filterBy, setFilterBy] = useState(null);
   const [firstTime, setFirstTime] = useState(true);
-
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     fetchData(filterBy, searchQuery, page, pageSize);
   }, [searchQuery, filterBy, page, pageSize]);
@@ -169,6 +169,7 @@ const FilterBox = ({ user, notify }) => {
     }
   }, [filterData]);
   const fetchData = (filterBy, searchQuery, page, pageSize) => {
+    setLoading(true);
     fetch(
       "http://localhost:9000/" +
         filterBy +
@@ -198,9 +199,11 @@ const FilterBox = ({ user, notify }) => {
             setFilterData(allFiles);
             setTotal(total);
           }
+          setLoading(false);
         }
       })
       .catch((error) => {
+        setLoading(false);
         removeCookie("user", { path: "/" });
         navigate("/login");
       });
@@ -268,30 +271,39 @@ const FilterBox = ({ user, notify }) => {
         handleFiltration={handleFiltration}
         isError={inputError}
       />
-      <FilterCards
-        user={user}
-        data={filterData}
-        pageSize={pageSize}
-        page={page}
-        total={total}
-        setPage={setPage}
-        setFilterData={setFilterData}
-        setValues={setValues}
-        notify={notify}
-      />
-      {total > pageSize && (
-        <div className="pagination" style={{ justifyContent: "center" }}>
-          <Pagination
-            defaultCurrent={1}
-            current={page}
+      {loading ? (
+        <>
+          <SpinnerComponent variant="primary" />
+        </>
+      ) : (
+        <>
+          {" "}
+          <FilterCards
+            user={user}
+            data={filterData}
             pageSize={pageSize}
+            page={page}
             total={total}
-            onChange={(newPage, newPageSize) => {
-              setPage(newPage);
-              setPageSize(newPageSize);
-            }}
+            setPage={setPage}
+            setFilterData={setFilterData}
+            setValues={setValues}
+            notify={notify}
           />
-        </div>
+          {total > pageSize && (
+            <div className="pagination" style={{ justifyContent: "center" }}>
+              <Pagination
+                defaultCurrent={1}
+                current={page}
+                pageSize={pageSize}
+                total={total}
+                onChange={(newPage, newPageSize) => {
+                  setPage(newPage);
+                  setPageSize(newPageSize);
+                }}
+              />
+            </div>
+          )}
+        </>
       )}
     </>
   );

@@ -5,7 +5,7 @@ import Row from "react-bootstrap/esm/Row";
 import Col from "react-bootstrap/esm/Col";
 import ListGroup from "react-bootstrap/ListGroup";
 import Badge from "react-bootstrap/Badge";
-
+import SpinnerComponent from "../CommonComponents/Spinner";
 import { Select } from "antd";
 const FilterSearch = (props) => {
   const [summary, setSummary] = useState([]);
@@ -18,7 +18,7 @@ const FilterSearch = (props) => {
     handleChange,
     isError,
   } = props;
-
+  const [loading, setLoading] = useState(false);
   let optionUnSeen = { label: "لم تقرأ / تسمع بعد", value: "ON_UNSEEN" };
   const options = [
     { label: "شكاوى اليوم", value: "ON_TODAY" },
@@ -36,6 +36,7 @@ const FilterSearch = (props) => {
     options.push(optionUnSeen);
   }
   useEffect(() => {
+    setLoading(true);
     fetch("http://localhost:9000/summary", {
       credentials: "include",
     })
@@ -51,9 +52,11 @@ const FilterSearch = (props) => {
         } else {
           const data = await response.json();
           setSummary(data);
+          setLoading(false);
         }
       })
       .catch((error) => {
+        setLoading(false);
         // removeCookie("user", { path: "/" });
         // navigate("/login");
       });
@@ -84,6 +87,7 @@ const FilterSearch = (props) => {
                 </Col>
                 <Col xs={3} md={4}>
                   <Select
+                    showSearch
                     allowClear
                     style={{
                       textAlign: "right",
@@ -100,53 +104,61 @@ const FilterSearch = (props) => {
             </Form>
           </Col>
           <Col xs={3} md={4}>
-            <div className="summary">
-              <ListGroup as="ol">
-                {summary?.map((element, index) => {
-                  let statusValue = "لم تقرأ / تسمع بعد";
-                  switch (element.status) {
-                    case "ON_TOTAL":
-                      statusValue = "إجمالي الشكاوى";
-                      break;
-                    case "ON_UNSEEN":
-                      statusValue = "الشكاوى التي لم تقرأ / تسمع بعد";
-                      break;
-                    case "ON_HOLD":
-                      statusValue = "الشكاوى الجاري دراستها";
-                      break;
-                    case "ON_SOLVE":
-                      statusValue = "الشكاوى التي تم حلها والتواصل";
-                      break;
-                    case "ON_STUDY":
-                      if (user && user.role === "User") {
-                        statusValue = "الشكاوى المطلوب الرد عليها";
-                      } else {
-                        statusValue = "الشكاوى التي بالفرع المختص";
+            {loading ? (
+              <>
+                <SpinnerComponent variant="primary" />
+              </>
+            ) : (
+              <>
+                <div className="summary">
+                  <ListGroup as="ul">
+                    {summary?.map((element, index) => {
+                      let statusValue = "لم تقرأ / تسمع بعد";
+                      switch (element.status) {
+                        case "ON_TOTAL":
+                          statusValue = "إجمالي الشكاوى";
+                          break;
+                        case "ON_UNSEEN":
+                          statusValue = "الشكاوى التي لم تقرأ / تسمع بعد";
+                          break;
+                        case "ON_HOLD":
+                          statusValue = "الشكاوى الجاري دراستها";
+                          break;
+                        case "ON_SOLVE":
+                          statusValue = "الشكاوى التي تم حلها والتواصل";
+                          break;
+                        case "ON_STUDY":
+                          if (user && user.role === "User") {
+                            statusValue = "الشكاوى المطلوب الرد عليها";
+                          } else {
+                            statusValue = "الشكاوى التي بالفرع المختص";
+                          }
+                          break;
+                        default:
+                          statusValue = "الشكاوى التي لم تقرأ / تسمع بعد";
+                          break;
                       }
-                      break;
-                    default:
-                      statusValue = "الشكاوى التي لم تقرأ / تسمع بعد";
-                      break;
-                  }
-                  return (
-                    <>
-                      <ListGroup.Item
-                        key={index}
-                        as="li"
-                        className="d-flex justify-content-between align-items-start"
-                      >
-                        <div className="ms-2 mr-auto">
-                          <div className="fw-bold">{statusValue}</div>
-                        </div>
-                        <Badge bg="primary" pill>
-                          {element._count.status}
-                        </Badge>
-                      </ListGroup.Item>
-                    </>
-                  );
-                })}
-              </ListGroup>
-            </div>
+                      return (
+                        <>
+                          <ListGroup.Item
+                            key={index}
+                            as="li"
+                            className="d-flex justify-content-between align-items-start"
+                          >
+                            <div className="ms-2 mr-auto">
+                              <div className="fw-bold">{statusValue}</div>
+                            </div>
+                            <Badge bg="primary" pill>
+                              {element._count.status}
+                            </Badge>
+                          </ListGroup.Item>
+                        </>
+                      );
+                    })}
+                  </ListGroup>
+                </div>
+              </>
+            )}
           </Col>
         </Row>
       </div>
