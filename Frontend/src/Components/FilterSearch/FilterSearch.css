@@ -9,6 +9,9 @@
   width: 100%;
   direction: rtl;
 }
+.ant-select-dropdown {
+  text-align: right;
+}
 .summary {
   width: 80%;
   direction: rtl;

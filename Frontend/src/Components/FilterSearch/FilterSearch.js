@@ -144,7 +144,7 @@ const FilterSearch = (props) => {
                   <Select
                     allowClear
                     style={{
-                      textAlign: "right",
+                      textAlign: "center",
                       direction: "rtl",
                       width: "100%",
                     }}
