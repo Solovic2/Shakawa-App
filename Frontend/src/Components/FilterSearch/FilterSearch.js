@@ -20,6 +20,7 @@ const FilterSearch = (props) => {
     isError,
   } = props;
   const [loading, setLoading] = useState(false);
+  const [refresh, setRefresh] = useState(false);
   let optionUnSeen = { label: "لم تقرأ / تسمع بعد", value: "ON_UNSEEN" };
   const options = [
     { label: "شكاوى اليوم", value: "ON_TODAY" },
@@ -61,7 +62,7 @@ const FilterSearch = (props) => {
         // removeCookie("user", { path: "/" });
         // navigate("/login");
       });
-  }, []);
+  }, [refresh]);
 
   return (
     <>
@@ -78,7 +79,7 @@ const FilterSearch = (props) => {
                   <div style={{ marginBottom: "5px", textAlign: "left" }}>
                     <RefreshButton
                       color={"primary"}
-                      handleClick={() => window.location.reload()}
+                      handleClick={() => setRefresh((prev) => !prev)}
                     />
                   </div>
 
