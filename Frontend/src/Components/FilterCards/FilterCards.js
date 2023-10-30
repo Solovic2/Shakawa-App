@@ -275,7 +275,7 @@ function FilterCards({
               element.fileType === "txt" ? "لم تقرأ بعد" : "لم تسمع بعد";
             break;
           case "ON_HOLD":
-            statusBadge = "badge text-bg-info";
+            statusBadge = "badge text-bg-secondary";
             statusValue = "جاري الدراسة";
             break;
           case "ON_SOLVE":
@@ -287,7 +287,7 @@ function FilterCards({
               statusBadge = "badge text-bg-danger";
               statusValue = "مطلوب الرد";
             } else {
-              statusBadge = "badge text-bg-warning";
+              statusBadge = "badge text-bg-dark";
               statusValue = "بالفرع المختص";
             }
 

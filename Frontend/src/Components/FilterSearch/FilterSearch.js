@@ -7,6 +7,7 @@ import ListGroup from "react-bootstrap/ListGroup";
 import Badge from "react-bootstrap/Badge";
 import SpinnerComponent from "../CommonComponents/Spinner";
 import { Select } from "antd";
+import RefreshButton from "../CommonComponents/RefreshButton";
 const FilterSearch = (props) => {
   const [summary, setSummary] = useState([]);
   const {
@@ -74,27 +75,41 @@ const FilterSearch = (props) => {
             ) : (
               <>
                 <div className="summary">
+                  <div style={{ marginBottom: "5px", textAlign: "left" }}>
+                    <RefreshButton
+                      color={"primary"}
+                      handleClick={() => window.location.reload()}
+                    />
+                  </div>
+
                   <ListGroup>
                     {summary?.map((element, index) => {
                       let statusValue = "لم تقرأ / تسمع بعد";
+                      let bg = "primary";
                       switch (element.status) {
                         case "ON_TOTAL":
                           statusValue = "إجمالي الشكاوى";
+                          bg = "primary";
                           break;
                         case "ON_UNSEEN":
                           statusValue = "الشكاوى التي لم تقرأ / تسمع بعد";
+                          bg = "danger";
                           break;
                         case "ON_HOLD":
                           statusValue = "الشكاوى الجاري دراستها";
+                          bg = "secondary";
                           break;
                         case "ON_SOLVE":
                           statusValue = "الشكاوى التي تم حلها والتواصل";
+                          bg = "success";
                           break;
                         case "ON_STUDY":
                           if (user && user.role === "User") {
                             statusValue = "الشكاوى المطلوب الرد عليها";
+                            bg = "danger";
                           } else {
                             statusValue = "الشكاوى التي بالفرع المختص";
+                            bg = "dark";
                           }
                           break;
                         default:
@@ -110,7 +125,7 @@ const FilterSearch = (props) => {
                           <div className="ms-2 mr-auto">
                             <div className="fw-bold fs-5">{statusValue}</div>
                           </div>
-                          <Badge bg="primary" pill>
+                          <Badge bg={bg} pill>
                             {element._count.status}
                           </Badge>
                         </ListGroup.Item>
@@ -124,7 +139,7 @@ const FilterSearch = (props) => {
           <Col xs={9} md={8}>
             <Form>
               <Row>
-                <Col xs={3} md={4}>
+                <Col xs={3} md={6}>
                   <Form.Group>
                     <Form.Control
                       type="search"
@@ -133,6 +148,14 @@ const FilterSearch = (props) => {
                       onKeyDown={handleEnterPress}
                       onChange={handleChange}
                       isInvalid={isError}
+                      style={{
+                        padding: "10px",
+                        border: "1px solid #ccc",
+                        fontSize: "16px",
+                        borderRadius: "5px",
+                        fontFamily: "Arial",
+                        direction: "rtl",
+                      }}
                     />
                     <Form.Control.Feedback type="invalid">
                       الرجاء التأكد بكتابة رقم التليفون أو التاريخ على صورة
@@ -140,14 +163,16 @@ const FilterSearch = (props) => {
                     </Form.Control.Feedback>
                   </Form.Group>
                 </Col>
-                <Col xs={3} md={4}>
+                <Col xs={3} md={6}>
                   <Select
                     allowClear
                     className="custom-select"
+                    // size="large"
                     style={{
                       textAlign: "center",
                       direction: "rtl",
                       width: "100%",
+                      height: "100%",
                     }}
                     placeholder="تصنيف (فلتر)"
                     defaultValue={selectedValue}

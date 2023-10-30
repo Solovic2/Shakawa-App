@@ -7,6 +7,7 @@ import FilterCards from "../FilterCards/FilterCards";
 import { useCookies } from "react-cookie";
 import { Pagination } from "antd";
 import SpinnerComponent from "../CommonComponents/Spinner";
+import RefreshButton from "../CommonComponents/RefreshButton";
 const FilterBox = ({ user, notify }) => {
   const navigate = useNavigate();
   const [values, setValues] = useState([]);
@@ -22,6 +23,7 @@ const FilterBox = ({ user, notify }) => {
   const [filterBy, setFilterBy] = useState(null);
   const [firstTime, setFirstTime] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [pageIsEmpty, setPageIsEmpty] = useState(false);
   useEffect(() => {
     fetchData(filterBy, searchQuery, page, pageSize);
   }, [searchQuery, filterBy, page, pageSize]);
@@ -156,7 +158,10 @@ const FilterBox = ({ user, notify }) => {
       setFirstTime(false);
       return;
     }
-    if (filterData.length === 0 && !firstTime && total !== -1) {
+    setPageIsEmpty(false);
+    if (filterData.length === 0 && !firstTime && total === 0) {
+      setPageIsEmpty(true);
+    } else if (filterData.length === 0 && !firstTime && total !== -1) {
       window.location.reload();
     } else if (filterData.length > pageSize) {
       setFilterData((prevFilterData) => {
@@ -277,18 +282,32 @@ const FilterBox = ({ user, notify }) => {
         </>
       ) : (
         <>
-          {" "}
-          <FilterCards
-            user={user}
-            data={filterData}
-            pageSize={pageSize}
-            page={page}
-            total={total}
-            setPage={setPage}
-            setFilterData={setFilterData}
-            setValues={setValues}
-            notify={notify}
-          />
+          {pageIsEmpty ? (
+            <div className="no-data text-center">
+              <h1>لا توجد بيانات في هذه الصفحة الرجاء قم بعمل تحديث للصفحة</h1>
+              <RefreshButton
+                message={"تحديث"}
+                color={"primary"}
+                handleClick={() => window.location.reload()}
+              />
+            </div>
+          ) : (
+            <>
+              {" "}
+              <FilterCards
+                user={user}
+                data={filterData}
+                pageSize={pageSize}
+                page={page}
+                total={total}
+                setPage={setPage}
+                setFilterData={setFilterData}
+                setValues={setValues}
+                notify={notify}
+              />
+            </>
+          )}
+
           {total > pageSize && (
             <div className="pagination" style={{ justifyContent: "center" }}>
               <Pagination

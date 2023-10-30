@@ -13,7 +13,7 @@
   text-align: right;
 }
 .summary {
-  width: 80%;
+  width: 100%;
   direction: rtl;
   margin: 0px auto;
 }
@@ -24,27 +24,21 @@
 .searchBar form .row {
   justify-content: start;
 }
-.searchBar .form-control:focus {
-  border-color: #86b7fe !important;
-}
 
-.searchBar form input {
-  border-color: #000;
+.searchBar input::placeholder {
+  font: 1.25rem/3 sans-serif;
+}
+.ant-select-dropdown .ant-select-item,
+.ant-select-selection-item {
+  font-size: 20px;
 }
 .custom-select {
   width: 100px;
 }
-.custom-select .ant-select-selector {
-  border-color: #000 !important; /* Set the initial border color */
+.ant-select-selection-placeholder {
+  font: 1.25rem/3 sans-serif;
+  color: #595c5f !important;
 }
-.ant-select-focused:where(.css-dev-only-do-not-override-amq5gd).ant-select:not(
-    .ant-select-disabled
-  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
-  .ant-select-selector,
-.custom-select .ant-select-selector:hover {
-  border-color: #1677ff !important; /* Set the hover border color */
-}
-
 .selector {
   width: 120px;
   height: 40px;
