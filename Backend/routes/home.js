@@ -584,20 +584,35 @@ async function getSummary(user) {
     },
   };
 
-  let dbStatus = await prisma.file.groupBy({
-    where: {
-      flag: 0,
-    },
-    by: ["status"],
-    _count: {
-      status: true,
-    },
-  });
+  let dbStatus;
   let countTotalStatus = 0;
+  if (user.role !== Role.User) {
+    dbStatus = await prisma.file.groupBy({
+      where: {
+        flag: 0,
+      },
+      by: ["status"],
+      _count: {
+        status: true,
+      },
+    });
+  } else {
+    dbStatus = await prisma.file.groupBy({
+      where: {
+        flag: 0,
+        groupId: +user.groupId,
+      },
+      by: ["status"],
+      _count: {
+        status: true,
+      },
+    });
+  }
+
   dbStatus.forEach((element) => {
     countTotalStatus += element._count.status;
   });
-  if (user !== Role.User) {
+  if (user.role !== Role.User) {
     const files = await fs.promises.readdir(folderPath);
     const allHiddenFiles = await prisma.file.count({
       where: {
@@ -685,7 +700,7 @@ router.get(
 
 router.get("/summary", requireAuth, async (req, res) => {
   const { user } = req;
-  const summary = await getSummary(user.role);
+  const summary = await getSummary(user);
   res.send(summary);
 });
 // API To Get Groups
