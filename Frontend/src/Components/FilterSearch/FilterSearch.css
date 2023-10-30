@@ -24,6 +24,27 @@
 .searchBar form .row {
   justify-content: start;
 }
+.searchBar .form-control:focus {
+  border-color: #86b7fe !important;
+}
+
+.searchBar form input {
+  border-color: #000;
+}
+.custom-select {
+  width: 100px;
+}
+.custom-select .ant-select-selector {
+  border-color: #000 !important; /* Set the initial border color */
+}
+.ant-select-focused:where(.css-dev-only-do-not-override-amq5gd).ant-select:not(
+    .ant-select-disabled
+  ):not(.ant-select-customize-input):not(.ant-pagination-size-changer)
+  .ant-select-selector,
+.custom-select .ant-select-selector:hover {
+  border-color: #1677ff !important; /* Set the hover border color */
+}
+
 .selector {
   width: 120px;
   height: 40px;

@@ -103,7 +103,7 @@ const FilterSearch = (props) => {
                       }
                       return (
                         <ListGroup.Item
-                          variant="dark"
+                          variant="secondary"
                           key={index}
                           className="d-flex justify-content-between align-items-start"
                         >
@@ -143,6 +143,7 @@ const FilterSearch = (props) => {
                 <Col xs={3} md={4}>
                   <Select
                     allowClear
+                    className="custom-select"
                     style={{
                       textAlign: "center",
                       direction: "rtl",
