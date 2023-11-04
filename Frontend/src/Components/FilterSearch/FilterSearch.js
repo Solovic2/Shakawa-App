@@ -67,124 +67,122 @@ const FilterSearch = (props) => {
   return (
     <>
       <div className="searchBar">
-        <Row>
-          <Col xs={3} md={3}>
-            {loading ? (
-              <>
-                <SpinnerComponent variant="primary" />
-              </>
-            ) : (
-              <>
-                <div className="summary">
-                  <div style={{ marginBottom: "5px", textAlign: "left" }}>
-                    <RefreshButton
-                      color={"primary"}
-                      handleClick={() => setRefresh((prev) => !prev)}
-                    />
-                  </div>
-
-                  <ListGroup>
-                    {summary?.map((element, index) => {
-                      let statusValue = "لم تقرأ / تسمع بعد";
-                      let bg = "primary";
-                      switch (element.status) {
-                        case "ON_TOTAL":
-                          statusValue = "إجمالي الشكاوى";
-                          bg = "primary";
-                          break;
-                        case "ON_UNSEEN":
-                          statusValue = "الشكاوى التي لم تقرأ / تسمع بعد";
-                          bg = "danger";
-                          break;
-                        case "ON_HOLD":
-                          statusValue = "الشكاوى الجاري دراستها";
-                          bg = "secondary";
-                          break;
-                        case "ON_SOLVE":
-                          statusValue = "الشكاوى التي تم حلها والتواصل";
-                          bg = "success";
-                          break;
-                        case "ON_STUDY":
-                          if (user && user.role === "User") {
-                            statusValue = "الشكاوى المطلوب الرد عليها";
-                            bg = "danger";
-                          } else {
-                            statusValue = "الشكاوى التي بالفرع المختص";
-                            bg = "dark";
-                          }
-                          break;
-                        default:
-                          statusValue = "الشكاوى التي لم تقرأ / تسمع بعد";
-                          break;
+        {loading ? (
+          <>
+            <SpinnerComponent variant="primary" />
+          </>
+        ) : (
+          <>
+            <div className="summary">
+              <ListGroup horizontal>
+                {summary?.map((element, index) => {
+                  let statusValue = "لم تقرأ / تسمع بعد";
+                  let bg = "primary";
+                  switch (element.status) {
+                    case "ON_TOTAL":
+                      statusValue = "إجمالي الشكاوى";
+                      bg = "primary";
+                      break;
+                    case "ON_UNSEEN":
+                      statusValue = "الشكاوى التي لم تقرأ / تسمع بعد";
+                      bg = "danger";
+                      break;
+                    case "ON_HOLD":
+                      statusValue = "الشكاوى الجاري دراستها";
+                      bg = "secondary";
+                      break;
+                    case "ON_SOLVE":
+                      statusValue = "الشكاوى التي تم حلها والتواصل";
+                      bg = "success";
+                      break;
+                    case "ON_STUDY":
+                      if (user && user.role === "User") {
+                        statusValue = "الشكاوى المطلوب الرد عليها";
+                        bg = "danger";
+                      } else {
+                        statusValue = "الشكاوى التي بالفرع المختص";
+                        bg = "warning";
                       }
-                      return (
-                        <ListGroup.Item
-                          variant="secondary"
-                          key={index}
-                          className="d-flex justify-content-between align-items-start"
-                        >
-                          <div className="ms-2 mr-auto">
-                            <div className="fw-bold fs-5">{statusValue}</div>
-                          </div>
-                          <Badge bg={bg} pill>
-                            {element._count.status}
-                          </Badge>
-                        </ListGroup.Item>
-                      );
-                    })}
-                  </ListGroup>
-                </div>
-              </>
-            )}
-          </Col>
-          <Col xs={9} md={8}>
-            <Form>
-              <Row>
-                <Col xs={3} md={6}>
-                  <Form.Group>
-                    <Form.Control
-                      type="search"
-                      placeholder="بحث بالتاريخ ورقم الهاتف"
-                      value={inputValue}
-                      onKeyDown={handleEnterPress}
-                      onChange={handleChange}
-                      isInvalid={isError}
-                      style={{
-                        padding: "10px",
-                        border: "1px solid #ccc",
-                        fontSize: "16px",
-                        borderRadius: "5px",
-                        fontFamily: "Arial",
-                        direction: "rtl",
-                      }}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      الرجاء التأكد بكتابة رقم التليفون أو التاريخ على صورة
-                      يوم-شهر-سنة
-                    </Form.Control.Feedback>
-                  </Form.Group>
-                </Col>
-                <Col xs={3} md={6}>
-                  <Select
-                    allowClear
-                    className="custom-select"
-                    // size="large"
-                    style={{
-                      textAlign: "center",
-                      direction: "rtl",
-                      width: "100%",
-                      height: "100%",
-                    }}
-                    placeholder="تصنيف (فلتر)"
-                    defaultValue={selectedValue}
-                    onChange={handleFiltration}
-                    options={options}
-                  />
-                </Col>
-              </Row>
-            </Form>
-          </Col>
-        </Row>
+                      break;
+                    default:
+                      statusValue = "الشكاوى التي لم تقرأ / تسمع بعد";
+                      break;
+                  }
+                  return (
+                    <ListGroup.Item
+                      style={{ direction: "rtl" }}
+                      variant="primary"
+                      key={index}
+                      className="d-flex justify-content-between align-items-start"
+                    >
+                      <div className="ms-2 mr-auto">
+                        <div className="fw-bold fs-5">{statusValue}</div>
+                      </div>
+                      <Badge
+                        bg={bg}
+                        text={bg === "warning" ? "black" : "white"}
+                        pill
+                        className="fs-6"
+                      >
+                        {element._count.status}
+                      </Badge>
+                    </ListGroup.Item>
+                  );
+                })}
+              </ListGroup>
+              <div>
+                <RefreshButton
+                  color={"primary"}
+                  handleClick={() => setRefresh((prev) => !prev)}
+                />
+              </div>
+            </div>
+          </>
+        )}
+        <Form>
+          <Row>
+            <Col xs={4} md={4}>
+              <Form.Group>
+                <Form.Control
+                  type="search"
+                  placeholder="بحث بالتاريخ ورقم الهاتف"
+                  value={inputValue}
+                  onKeyDown={handleEnterPress}
+                  onChange={handleChange}
+                  isInvalid={isError}
+                  style={{
+                    padding: "10px",
+                    border: "1px solid #ccc",
+                    fontSize: "16px",
+                    borderRadius: "5px",
+                    fontFamily: "Arial",
+                    direction: "rtl",
+                  }}
+                />
+                <Form.Control.Feedback type="invalid">
+                  الرجاء التأكد بكتابة رقم التليفون أو التاريخ على صورة
+                  يوم-شهر-سنة
+                </Form.Control.Feedback>
+              </Form.Group>
+            </Col>
+            <Col xs={4} md={4}>
+              <Select
+                allowClear
+                className="custom-select"
+                style={{
+                  textAlign: "center",
+                  direction: "rtl",
+                  width: "100%",
+                  height: "100%",
+                }}
+                placeholder="تصنيف (فلتر)"
+                defaultValue={selectedValue}
+                onChange={handleFiltration}
+                options={options}
+              />
+            </Col>
+          </Row>
+        </Form>
       </div>
     </>
   );

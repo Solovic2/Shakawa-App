@@ -287,7 +287,7 @@ function FilterCards({
               statusBadge = "badge text-bg-danger";
               statusValue = "مطلوب الرد";
             } else {
-              statusBadge = "badge text-bg-dark";
+              statusBadge = "badge text-bg-warning";
               statusValue = "بالفرع المختص";
             }
 
