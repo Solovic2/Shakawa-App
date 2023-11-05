@@ -386,6 +386,9 @@ async function getUserAttachedData(
     where,
     skip,
     take: parseInt(pageSize),
+    orderBy: {
+      fileDate: "desc", // 'desc' for descending order (most recent first)
+    },
     include: {
       user: true,
       complaint: true,
