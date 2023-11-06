@@ -86,6 +86,8 @@ const splitPath = (element) => {
   info.push(splitter[0]);
   info.push(splitter[1] + "-" + splitter[2] + "-" + splitter[3]);
   info.push(path[path.length - 1]);
+  info.push(new Date(splitter[3] + "-" + splitter[2] + "-" + splitter[1]));
+
   return info;
 };
 
@@ -382,13 +384,14 @@ async function getUserAttachedData(
   if (filterBy !== "null") {
     where.status = filterBy;
   }
+
   const files = await prisma.file.findMany({
     where,
-    skip,
-    take: parseInt(pageSize),
     orderBy: {
       fileDate: "desc", // 'desc' for descending order (most recent first)
     },
+    skip,
+    take: parseInt(pageSize),
     include: {
       user: true,
       complaint: true,
@@ -403,7 +406,14 @@ async function getUserAttachedData(
       record: files[i].complaint,
       info: files[i].info,
       mobile: files[i].mobile,
-      fileDate: files[i].fileDate,
+      fileDate:
+        files[i].fileDate !== null
+          ? `${files[i].fileDate.getDate().toString().padStart(2, "0")}-${(
+              files[i].fileDate.getMonth() + 1
+            )
+              .toString()
+              .padStart(2, "0")}-${files[i].fileDate.getFullYear()}`
+          : null,
       fileType: files[i].fileType,
       repliedBy: files[i].user ? files[i].user.username : null,
       groupId: files[i].groupId,
@@ -500,7 +510,8 @@ async function readAllFiles(
       if (searchQuery !== "*") {
         // If Search By Date
         if (searchQuery.match(/^\d{2}-\d{2}-\d{4}$/)) {
-          where.fileDate = searchQuery;
+          const [day, month, year] = searchQuery.split("-");
+          where.fileDate = new Date(year, month - 1, day);
         } else {
           // If Search By Number
           where.mobile = searchQuery;
@@ -508,6 +519,9 @@ async function readAllFiles(
       }
       const filterStatusData = await prisma.file.findMany({
         where,
+        orderBy: {
+          fileDate: "desc", // 'desc' for descending order (most recent first)
+        },
         skip,
         take: parseInt(pageSize),
         include: {
@@ -522,7 +536,19 @@ async function readAllFiles(
           record: filterStatusData[i].complaint,
           info: filterStatusData[i].info,
           mobile: filterStatusData[i].mobile,
-          fileDate: filterStatusData[i].fileDate,
+          fileDate:
+            filterStatusData[i].fileDate !== null
+              ? `${filterStatusData[i].fileDate
+                  .getDate()
+                  .toString()
+                  .padStart(2, "0")}-${(
+                  filterStatusData[i].fileDate.getMonth() + 1
+                )
+                  .toString()
+                  .padStart(2, "0")}-${filterStatusData[
+                  i
+                ].fileDate.getFullYear()}`
+              : null,
           fileType: filterStatusData[i].fileType,
           repliedBy: filterStatusData[i].user
             ? filterStatusData[i].user.username
@@ -802,7 +828,7 @@ router.post("/attach-file-to-group", requireAuth, async (req, res) => {
       create: {
         path: data.path,
         mobile: splitData[0],
-        fileDate: splitData[1],
+        fileDate: splitData[3],
         fileType: splitData[2],
         groupId: +data.group,
         info: "",
@@ -916,7 +942,7 @@ router.post("/delete-complain/:path", requireAuth, async (req, res) => {
         path: path,
         info: "",
         mobile: splitData[0],
-        fileDate: splitData[1],
+        fileDate: splitData[3],
         fileType: splitData[2],
         flag: 1,
       },

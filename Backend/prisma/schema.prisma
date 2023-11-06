@@ -43,7 +43,7 @@ model File {
   id          Int        @id @default(autoincrement())
   path        String     @unique
   mobile      String?
-  fileDate    String?
+  fileDate    DateTime?
   fileType    String?
   info        String?    @default("")
   flag        Int?       @default(0)
