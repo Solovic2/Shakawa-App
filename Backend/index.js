@@ -40,3 +40,8 @@ try {
     console.log("Port In Use");
   }
 }
+
+// process.on("uncaughtException", (error)=>{
+//   console.log('Uncaught Exception', error);
+//   process.exit(1);
+// });

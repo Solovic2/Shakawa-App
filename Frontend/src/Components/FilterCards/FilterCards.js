@@ -329,6 +329,12 @@ function FilterCards({
             <div className="card-status">
               <span className={statusBadge}>{statusValue}</span>
             </div>
+            {element.id && (
+              <div className="card-code">
+                <span className="badge text-bg-secondary">#{element.id}</span>
+              </div>
+            )}
+
             {user && user.role === "Admin" && (
               <div className="deleteBtn">
                 <Button

@@ -61,6 +61,10 @@ const ModalComponent = ({
                 <audio
                   controls
                   src={`http://localhost:9000/audio/${encodeURI(path)}`}
+                  onError={({ currentTarget }) => {
+                    currentTarget.onerror = null; // prevents looping
+                    // currentTarget.src = "/vector.png";
+                  }}
                 />
               ) : (
                 <div>

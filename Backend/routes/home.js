@@ -111,22 +111,21 @@ async function getSortedFilesAndRecordsByDate(
     filteredFiles = files;
     /*****  Get Text Data From Database and Paginate on it *****/
     let complaintDataTextNotUnSeen;
-    let reversedDate = null;
+    let isDate = false;
     // Get Type Of Searching (Mobile Or Date)
     if (searchQuery !== "*") {
-      reversedDate = null;
       // If searchQuery is not empty, check if it's a date or a mobile number
       const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
       if (dateRegex.test(searchQuery)) {
-        reversedDate = searchQuery.split("-");
+        isDate = true;
         // If it's a date, search by the date
         where = {
           complainDate: {
             equals: new Date(searchQuery),
           },
         };
-      } else {
-        reversedDate = null;
+      } else if (!searchQuery.startsWith("#")) {
+        isDate = false;
         // If it's a mobile number, search by mobile
         where = {
           mobileNumber: {
@@ -138,26 +137,26 @@ async function getSortedFilesAndRecordsByDate(
       filteredFiles = [];
       const splitDate = searchQuery.split("-");
       files.forEach(async (element) => {
-        if (reversedDate !== null) {
+        if (isDate) {
           if (
             element.includes(
-              splitDate[2] + "-" + splitDate[1] + "-" + reversedDate[0]
+              splitDate[2] + "-" + splitDate[1] + "-" + splitDate[0]
             )
           ) {
             filteredFiles.push(element);
           }
-        } else {
-          if (element.includes(searchQuery)) {
-            filteredFiles.push(element);
-          }
+        } else if (
+          !searchQuery.startsWith("#") &&
+          element.includes(searchQuery)
+        ) {
+          filteredFiles.push(element);
         }
       });
-      complaintDataTextNotUnSeen = await prisma.complaint.findMany({
-        where,
-      });
-    } else {
-      complaintDataTextNotUnSeen = await prisma.complaint.findMany();
     }
+
+    complaintDataTextNotUnSeen = await prisma.complaint.findMany({
+      where,
+    });
 
     if (filterBy === "ON_UNSEEN") {
       const complaintPaths = complaintDataTextNotUnSeen.map((text) => {
@@ -326,7 +325,10 @@ async function getSortedFilesAndRecordsByDate(
         countDB = await prisma.complaint.count();
       }
     }
-
+    let searchQueryById;
+    if (searchQuery.startsWith("#")) {
+      searchQueryById = searchQuery.slice(1);
+    }
     const dataWithFlagOne = await prisma.file.findMany({
       where: {
         flag: 1,
@@ -335,7 +337,6 @@ async function getSortedFilesAndRecordsByDate(
         path: true,
       },
     });
-
     const pathsWithFlagOne = dataWithFlagOne.map((record) => record.path);
     allRecords = allRecords.filter(
       (record) => !pathsWithFlagOne.includes(record.path)
@@ -371,6 +372,7 @@ async function getUserAttachedData(
       id: +user.groupId,
     },
   };
+  console.log(searchQuery);
   if (searchQuery !== "*") {
     const dateRegex = /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
     const match = searchQuery.match(dateRegex);
@@ -379,9 +381,13 @@ async function getUserAttachedData(
       where.path = {
         contains: match[3] + "-" + match[2] + "-" + match[1],
       };
-    } else {
+    } else if (!searchQuery.startsWith("#")) {
       where.path = {
         contains: searchQuery,
+      };
+    } else {
+      where.id = {
+        equals: +searchQuery.slice(1),
       };
     }
   }
@@ -406,6 +412,7 @@ async function getUserAttachedData(
   for (let i = 0; i < files.length; i++) {
     const path = files[i].path;
     const fileData = {
+      id: files[i].id,
       path: path,
       record: files[i].complaint,
       info: files[i].info,
@@ -475,6 +482,7 @@ async function readAllFiles(
           const element = disabledFiles.find((df) => df.path === path);
           if (element !== undefined && element.flag !== 1) {
             const fileData = {
+              id: element.id,
               path: path,
               record: data[i],
               info: element.info,
@@ -488,6 +496,7 @@ async function readAllFiles(
             allFiles.push(fileData);
           } else if (element === undefined) {
             const fileData = {
+              id: null,
               path: path,
               info: "",
               record: data[i],
@@ -516,11 +525,14 @@ async function readAllFiles(
         if (searchQuery.match(/^\d{2}-\d{2}-\d{4}$/)) {
           const [day, month, year] = searchQuery.split("-");
           where.fileDate = new Date(year, month - 1, day);
-        } else {
+        } else if (!searchQuery.startsWith("#")) {
           // If Search By Number
           where.mobile = searchQuery;
+        } else {
+          where.id = +searchQuery.slice(1);
         }
       }
+
       const filterStatusData = await prisma.file.findMany({
         where,
         orderBy: {
@@ -536,6 +548,7 @@ async function readAllFiles(
       for (let i = 0; i < filterStatusData.length; i++) {
         const path = filterStatusData[i].path;
         const fileData = {
+          id: filterStatusData[i].id,
           path: path,
           record: filterStatusData[i].complaint,
           info: filterStatusData[i].info,

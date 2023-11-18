@@ -18,7 +18,7 @@ const FilterBox = ({ user, notify }) => {
   const [selectedValue, setSelectedValue] = useState(undefined);
   const [total, setTotal] = useState(-1);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("*");
   const [filterBy, setFilterBy] = useState(null);
   const [firstTime, setFirstTime] = useState(true);
@@ -179,7 +179,7 @@ const FilterBox = ({ user, notify }) => {
       "http://localhost:9000/" +
         filterBy +
         "/" +
-        searchQuery +
+        encodeURIComponent(searchQuery) +
         "/" +
         page +
         "/" +
@@ -215,12 +215,12 @@ const FilterBox = ({ user, notify }) => {
   };
   // Handle The Change When Pressing Key In Search Bar To Filter Data
   const handleChange = (e) => {
-    if (/^[0-9-]*$/.test(e.target.value)) {
+    if (/^[0-9-#]*$/.test(e.target.value)) {
       setInputValue(e.target.value);
     }
     if (e.target.value === "") {
       setPage(1);
-      setPageSize(5);
+      setPageSize(10);
       setSearchQuery("*");
     }
   };
@@ -233,7 +233,10 @@ const FilterBox = ({ user, notify }) => {
         setPage(1);
         setSearchQuery(date);
         setInputError(false);
-      } else if (inputValue.match(/^[0-9]*$/)) {
+      } else if (
+        inputValue.match(/^[0-9]*$/) ||
+        inputValue.match(/^#[0-9]*$/)
+      ) {
         setPage(1);
         setSearchQuery(inputValue);
         setInputError(false);
