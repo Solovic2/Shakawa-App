@@ -106,117 +106,67 @@ async function getSortedFilesAndRecordsByDate(
   let countDB = 0;
   let filteredFiles = [];
   /*****  Get Files From OS and Paginate on it *****/
-  let files = await fs.promises.readdir(directoryPath);
-  filteredFiles = files;
-  /*****  Get Text Data From Database and Paginate on it *****/
-  let complaintDataTextNotUnSeen;
-  let reversedDate = null;
-  // Get Type Of Searching (Mobile Or Date)
-  if (searchQuery !== "*") {
-    reversedDate = null;
-    // If searchQuery is not empty, check if it's a date or a mobile number
-    const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
-    if (dateRegex.test(searchQuery)) {
-      reversedDate = searchQuery.split("-");
-      // If it's a date, search by the date
-      where = {
-        complainDate: {
-          equals: new Date(searchQuery),
-        },
-      };
-    } else {
+  try {
+    let files = await fs.promises.readdir(directoryPath);
+    filteredFiles = files;
+    /*****  Get Text Data From Database and Paginate on it *****/
+    let complaintDataTextNotUnSeen;
+    let reversedDate = null;
+    // Get Type Of Searching (Mobile Or Date)
+    if (searchQuery !== "*") {
       reversedDate = null;
-      // If it's a mobile number, search by mobile
-      where = {
-        mobileNumber: {
-          equals: searchQuery,
-        },
-      };
-    }
-    // Filter Files and Compliant Table With searchQuery.
-    filteredFiles = [];
-    const splitDate = searchQuery.split("-");
-    files.forEach(async (element) => {
-      if (reversedDate !== null) {
-        if (
-          element.includes(
-            splitDate[2] + "-" + splitDate[1] + "-" + reversedDate[0]
-          )
-        ) {
-          filteredFiles.push(element);
-        }
+      // If searchQuery is not empty, check if it's a date or a mobile number
+      const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+      if (dateRegex.test(searchQuery)) {
+        reversedDate = searchQuery.split("-");
+        // If it's a date, search by the date
+        where = {
+          complainDate: {
+            equals: new Date(searchQuery),
+          },
+        };
       } else {
-        if (element.includes(searchQuery)) {
-          filteredFiles.push(element);
+        reversedDate = null;
+        // If it's a mobile number, search by mobile
+        where = {
+          mobileNumber: {
+            equals: searchQuery,
+          },
+        };
+      }
+      // Filter Files and Compliant Table With searchQuery.
+      filteredFiles = [];
+      const splitDate = searchQuery.split("-");
+      files.forEach(async (element) => {
+        if (reversedDate !== null) {
+          if (
+            element.includes(
+              splitDate[2] + "-" + splitDate[1] + "-" + reversedDate[0]
+            )
+          ) {
+            filteredFiles.push(element);
+          }
+        } else {
+          if (element.includes(searchQuery)) {
+            filteredFiles.push(element);
+          }
         }
-      }
-    });
-    complaintDataTextNotUnSeen = await prisma.complaint.findMany({
-      where,
-    });
-  } else {
-    complaintDataTextNotUnSeen = await prisma.complaint.findMany();
-  }
+      });
+      complaintDataTextNotUnSeen = await prisma.complaint.findMany({
+        where,
+      });
+    } else {
+      complaintDataTextNotUnSeen = await prisma.complaint.findMany();
+    }
 
-  if (filterBy === "ON_UNSEEN") {
-    const complaintPaths = complaintDataTextNotUnSeen.map((text) => {
-      const regex = /(\d{4})-(\d{2})-(\d{2})/;
-      const date = text.complainDate.toISOString() + "";
-      const match = date.match(regex); // to make it string
-      if (match) {
-        return (
-          text.id +
-          "\\" +
-          text.mobileNumber +
-          "-" +
-          match[3] +
-          "-" +
-          match[2] +
-          "-" +
-          match[1] +
-          ".txt"
-        );
-      }
-      return "";
-    });
-    const osFilesPaths = filteredFiles.map((file) => file);
-    // Get All Files UnSeen
-    const filesNotUnSeen = await prisma.file.findMany({
-      where: {
-        NOT: {
-          status: filterBy,
-        },
-        OR: [
-          {
-            path: {
-              in: osFilesPaths,
-            },
-          },
-          {
-            path: {
-              in: complaintPaths,
-            },
-          },
-        ],
-      },
-      select: {
-        path: true,
-      },
-    });
-    const unSeenPaths = filesNotUnSeen.map((file) => file.path);
-
-    // Filter out the files that match the unSeenPaths
-    const unSeenFiles = filteredFiles.filter(
-      (file) => !unSeenPaths.includes(file)
-    );
-    // Filter out the complainTexts that match the unSeenPaths
-    const unSeenComplainText = complaintDataTextNotUnSeen.filter((text) => {
-      const regex = /(\d{4})-(\d{2})-(\d{2})/;
-      const date = text.complainDate.toISOString() + "";
-      const match = date.match(regex); // to make it string
-      if (match) {
-        return !unSeenPaths.includes(
-          text.id +
+    if (filterBy === "ON_UNSEEN") {
+      const complaintPaths = complaintDataTextNotUnSeen.map((text) => {
+        const regex = /(\d{4})-(\d{2})-(\d{2})/;
+        const date = text.complainDate.toISOString() + "";
+        const match = date.match(regex); // to make it string
+        if (match) {
+          return (
+            text.id +
             "\\" +
             text.mobileNumber +
             "-" +
@@ -226,131 +176,185 @@ async function getSortedFilesAndRecordsByDate(
             "-" +
             match[1] +
             ".txt"
-        );
-      }
-    });
-    // Read it ......
-    unSeenFiles.forEach((file) => {
-      const regex = /(\d{2})-(\d{2})-(\d{4})/;
-      const match = file.match(regex);
-      if (match) {
-        allRecords.push({
-          path: file,
-          data: null,
-          date: new Date(match[3], match[2] - 1, match[1]),
-        });
-      } else {
-        console.log("Date not found in File");
-      }
-    });
-
-    unSeenComplainText.forEach((text) => {
-      const regex = /(\d{4})-(\d{2})-(\d{2})/;
-      const date = text.complainDate.toISOString() + "";
-      const match = date.match(regex); // to make it string
-      if (match) {
-        allRecords.push({
-          // Make Path unique as id\mobile-dd-mm-yy.txt because db could has more than field with same name and date
-          path:
-            text.id +
-            "\\" +
-            text.mobileNumber +
-            "-" +
-            match[3] +
-            "-" +
-            match[2] +
-            "-" +
-            match[1] +
-            ".txt",
-          data: text, // Data Of Database
-          date: new Date(match[1], match[2] - 1, match[3]),
-        });
-      }
-    });
-
-    allRecords.sort((a, b) => b.date - a.date); // Sort data by date in descending order
-    total = unSeenFiles.length + unSeenComplainText.length;
-    // return { allRecords, total };
-  } else {
-    // // Iterate through the files
-    filteredFiles.forEach((file) => {
-      const regex = /(\d{2})-(\d{2})-(\d{4})/;
-      const match = file.match(regex);
-      if (match) {
-        allRecords.push({
-          path: file,
-          data: null,
-          date: new Date(match[3], match[2] - 1, match[1]),
-        });
-      } else {
-        console.log("Date not found in File");
-      }
-    });
-    // Read Texts From Database , Date is On yyyy-mm-dd form
-    complaintDataTextNotUnSeen.forEach((text) => {
-      const regex = /(\d{4})-(\d{2})-(\d{2})/;
-      const date = text.complainDate.toISOString() + "";
-      const match = date.match(regex); // to make it string
-      if (match) {
-        allRecords.push({
-          // Make Path unique as id\mobile-dd-mm-yy.txt because db could has more than field with same name and date
-          path:
-            text.id +
-            "\\" +
-            text.mobileNumber +
-            "-" +
-            match[3] +
-            "-" +
-            match[2] +
-            "-" +
-            match[1] +
-            ".txt",
-          data: text, // Data Of Database
-          date: new Date(match[1], match[2] - 1, match[3]),
-        });
-      }
-    });
-
-    if (!searchQuery.match(/^\d{2}-\d{2}-\d{4}$/)) {
-      // Sort By Date When Mobile or Getting All Data
-      allRecords.sort((a, b) => b.date - a.date); // Sort data by date in descending order
-    }
-
-    // Get Total Data number in Database and Files For Pagination
-    if (searchQuery !== "*") {
-      countDB = await prisma.complaint.count({
-        where,
+          );
+        }
+        return "";
       });
+      const osFilesPaths = filteredFiles.map((file) => file);
+      // Get All Files UnSeen
+      const filesNotUnSeen = await prisma.file.findMany({
+        where: {
+          NOT: {
+            status: filterBy,
+          },
+          OR: [
+            {
+              path: {
+                in: osFilesPaths,
+              },
+            },
+            {
+              path: {
+                in: complaintPaths,
+              },
+            },
+          ],
+        },
+        select: {
+          path: true,
+        },
+      });
+      const unSeenPaths = filesNotUnSeen.map((file) => file.path);
+
+      // Filter out the files that match the unSeenPaths
+      const unSeenFiles = filteredFiles.filter(
+        (file) => !unSeenPaths.includes(file)
+      );
+      // Filter out the complainTexts that match the unSeenPaths
+      const unSeenComplainText = complaintDataTextNotUnSeen.filter((text) => {
+        const regex = /(\d{4})-(\d{2})-(\d{2})/;
+        const date = text.complainDate.toISOString() + "";
+        const match = date.match(regex); // to make it string
+        if (match) {
+          return !unSeenPaths.includes(
+            text.id +
+              "\\" +
+              text.mobileNumber +
+              "-" +
+              match[3] +
+              "-" +
+              match[2] +
+              "-" +
+              match[1] +
+              ".txt"
+          );
+        }
+      });
+      // Read it ......
+      unSeenFiles.forEach((file) => {
+        const regex = /(\d{2})-(\d{2})-(\d{4})/;
+        const match = file.match(regex);
+        if (match) {
+          allRecords.push({
+            path: file,
+            data: null,
+            date: new Date(match[3], match[2] - 1, match[1]),
+          });
+        } else {
+          console.log("Date not found in File");
+        }
+      });
+
+      unSeenComplainText.forEach((text) => {
+        const regex = /(\d{4})-(\d{2})-(\d{2})/;
+        const date = text.complainDate.toISOString() + "";
+        const match = date.match(regex); // to make it string
+        if (match) {
+          allRecords.push({
+            // Make Path unique as id\mobile-dd-mm-yy.txt because db could has more than field with same name and date
+            path:
+              text.id +
+              "\\" +
+              text.mobileNumber +
+              "-" +
+              match[3] +
+              "-" +
+              match[2] +
+              "-" +
+              match[1] +
+              ".txt",
+            data: text, // Data Of Database
+            date: new Date(match[1], match[2] - 1, match[3]),
+          });
+        }
+      });
+
+      allRecords.sort((a, b) => b.date - a.date); // Sort data by date in descending order
+      total = unSeenFiles.length + unSeenComplainText.length;
+      // return { allRecords, total };
     } else {
-      countDB = await prisma.complaint.count();
+      // // Iterate through the files
+      filteredFiles.forEach((file) => {
+        const regex = /(\d{2})-(\d{2})-(\d{4})/;
+        const match = file.match(regex);
+        if (match) {
+          allRecords.push({
+            path: file,
+            data: null,
+            date: new Date(match[3], match[2] - 1, match[1]),
+          });
+        } else {
+          console.log("Date not found in File");
+        }
+      });
+      // Read Texts From Database , Date is On yyyy-mm-dd form
+      complaintDataTextNotUnSeen.forEach((text) => {
+        const regex = /(\d{4})-(\d{2})-(\d{2})/;
+        const date = text.complainDate.toISOString() + "";
+        const match = date.match(regex); // to make it string
+        if (match) {
+          allRecords.push({
+            // Make Path unique as id\mobile-dd-mm-yy.txt because db could has more than field with same name and date
+            path:
+              text.id +
+              "\\" +
+              text.mobileNumber +
+              "-" +
+              match[3] +
+              "-" +
+              match[2] +
+              "-" +
+              match[1] +
+              ".txt",
+            data: text, // Data Of Database
+            date: new Date(match[1], match[2] - 1, match[3]),
+          });
+        }
+      });
+
+      if (!searchQuery.match(/^\d{2}-\d{2}-\d{4}$/)) {
+        // Sort By Date When Mobile or Getting All Data
+        allRecords.sort((a, b) => b.date - a.date); // Sort data by date in descending order
+      }
+
+      // Get Total Data number in Database and Files For Pagination
+      if (searchQuery !== "*") {
+        countDB = await prisma.complaint.count({
+          where,
+        });
+      } else {
+        countDB = await prisma.complaint.count();
+      }
     }
-  }
 
-  const dataWithFlagOne = await prisma.file.findMany({
-    where: {
-      flag: 1,
-    },
-    select: {
-      path: true,
-    },
-  });
+    const dataWithFlagOne = await prisma.file.findMany({
+      where: {
+        flag: 1,
+      },
+      select: {
+        path: true,
+      },
+    });
 
-  const pathsWithFlagOne = dataWithFlagOne.map((record) => record.path);
-  allRecords = allRecords.filter(
-    (record) => !pathsWithFlagOne.includes(record.path)
-  );
-  allRecords = allRecords.slice(skip, skip + parseInt(pageSize));
-  if (allRecords.length > 0) {
-    if (filterBy === "ON_UNSEEN") {
-      total = total - pathsWithFlagOne.length;
+    const pathsWithFlagOne = dataWithFlagOne.map((record) => record.path);
+    allRecords = allRecords.filter(
+      (record) => !pathsWithFlagOne.includes(record.path)
+    );
+    allRecords = allRecords.slice(skip, skip + parseInt(pageSize));
+    if (allRecords.length > 0) {
+      if (filterBy === "ON_UNSEEN") {
+        total = total - pathsWithFlagOne.length;
+      } else {
+        total = countDB + filteredFiles.length - pathsWithFlagOne.length;
+      }
     } else {
-      total = countDB + filteredFiles.length - pathsWithFlagOne.length;
+      total = 0;
     }
-  } else {
-    total = 0;
-  }
 
-  return { allRecords, total };
+    return { allRecords, total };
+  } catch (e) {
+    console.log("Error : ", e);
+  }
 }
 
 // Get Data Attached From Database For User (with filter status)
@@ -642,7 +646,6 @@ async function getSummary(user) {
     countTotalStatus += element._count.status;
   });
   if (user.role !== Role.User) {
-    const files = await fs.promises.readdir(folderPath);
     const allHiddenFiles = await prisma.file.count({
       where: {
         flag: 1,
@@ -650,8 +653,16 @@ async function getSummary(user) {
     });
     const allDBComplaintTable = await prisma.complaint.count();
 
-    allItems.onTotal._count.status =
-      files.length + allDBComplaintTable - allHiddenFiles; // Update the count to the desired value
+    try {
+      const files = await fs.promises.readdir(folderPath);
+      allItems.onTotal._count.status =
+        files.length + allDBComplaintTable - allHiddenFiles; // Update the count to the desired value
+    } catch (error) {
+      console.log("Error : ", error);
+    }
+
+    // allItems.onTotal._count.status =
+    //   files.length + allDBComplaintTable - allHiddenFiles; // Update the count to the desired value
 
     let countUnSeenStatus = allItems.onTotal._count.status;
     // Check if there is an element with status "ON_UNSEEN" in the dbStatus array
