@@ -241,6 +241,7 @@ function FilterCards({
             if (card.path === path) {
               return {
                 ...card,
+                id: data.id,
                 info: data.info,
                 repliedBy: data.userId === null ? null : data.repliedBy,
                 groupId: data.groupId,
@@ -299,7 +300,22 @@ function FilterCards({
         }
         return (
           <div key={element.path} id="card" className={cardClass}>
-            <div className="mobile">
+            {element.id && (
+              <>
+                <div className="code">
+                  <label className="card-label">
+                    <span className="badge text-bg-secondary">
+                      #{element.id}
+                    </span>
+                    <span className="card-info"> :كود الشكوى</span>
+                  </label>
+                </div>
+              </>
+            )}
+            <div
+              className="mobile"
+              style={{ marginTop: !element.id && "40px" }}
+            >
               <label className="card-label">
                 {element.mobile || "UnKnown"}
                 <span className="card-info"> :رقم الهاتف</span>
@@ -329,11 +345,6 @@ function FilterCards({
             <div className="card-status">
               <span className={statusBadge}>{statusValue}</span>
             </div>
-            {element.id && (
-              <div className="card-code">
-                <span className="badge text-bg-secondary">#{element.id}</span>
-              </div>
-            )}
 
             {user && user.role === "Admin" && (
               <div className="deleteBtn">

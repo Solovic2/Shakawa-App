@@ -52,27 +52,27 @@ watcher
   })
   .on("unlink", async (path) => {
     console.log(`File ${path} has been removed`);
-    let deleteData = null;
-    try {
-      deleteData = await prisma.file.delete({
-        where: {
-          path: globalPath.basename(path),
-        },
-      });
-    } catch (error) {}
+    // let deleteData = null;
+    // try {
+    //   deleteData = await prisma.file.delete({
+    //     where: {
+    //       path: globalPath.basename(path),
+    //     },
+    //   });
+    // } catch (error) {}
 
-    if (!path.includes("tmp1")) {
-      let message = {
-        type: "delete",
-        data: {
-          path: globalPath.basename(path),
-          groupId: deleteData ? deleteData.groupId : null,
-        },
-      };
-      wss.clients.forEach((client) => {
-        client.send(JSON.stringify(message));
-      });
-    }
+    // if (!path.includes("tmp1")) {
+    //   let message = {
+    //     type: "delete",
+    //     data: {
+    //       path: globalPath.basename(path),
+    //       groupId: deleteData ? deleteData.groupId : null,
+    //     },
+    //   };
+    //   wss.clients.forEach((client) => {
+    //     client.send(JSON.stringify(message));
+    //   });
+    // }
   })
   .on("error", (error) => console.log(`Watcher error: ${error}`));
 
@@ -105,8 +105,8 @@ async function getSortedFilesAndRecordsByDate(
   let where; // Define a condition for filtering
   let countDB = 0;
   let filteredFiles = [];
-  /*****  Get Files From OS and Paginate on it *****/
   try {
+    /*****  Get Files From OS and Paginate on it *****/
     let files = await fs.promises.readdir(directoryPath);
     filteredFiles = files;
     /*****  Get Text Data From Database and Paginate on it *****/
@@ -149,6 +149,8 @@ async function getSortedFilesAndRecordsByDate(
           !searchQuery.startsWith("#") &&
           element.includes(searchQuery)
         ) {
+          filteredFiles.push(element);
+        } else if (searchQuery.startsWith("#")) {
           filteredFiles.push(element);
         }
       });
@@ -324,10 +326,25 @@ async function getSortedFilesAndRecordsByDate(
       } else {
         countDB = await prisma.complaint.count();
       }
+      // console.log(allRecords);
     }
     let searchQueryById;
     if (searchQuery.startsWith("#")) {
       searchQueryById = searchQuery.slice(1);
+      const file = await prisma.file.findUnique({
+        where: {
+          id: +searchQueryById,
+          flag: 0,
+        },
+        select: {
+          path: true,
+        },
+      });
+
+      allRecords = allRecords.filter((record) => record.path === file?.path);
+      allRecords = allRecords.slice(skip, skip + parseInt(pageSize));
+      total = allRecords.length;
+      return { allRecords, total };
     }
     const dataWithFlagOne = await prisma.file.findMany({
       where: {
@@ -337,15 +354,17 @@ async function getSortedFilesAndRecordsByDate(
         path: true,
       },
     });
+
     const pathsWithFlagOne = dataWithFlagOne.map((record) => record.path);
     allRecords = allRecords.filter(
       (record) => !pathsWithFlagOne.includes(record.path)
     );
+
+    total = allRecords.length;
+
     allRecords = allRecords.slice(skip, skip + parseInt(pageSize));
     if (allRecords.length > 0) {
-      if (filterBy === "ON_UNSEEN") {
-        total = total - pathsWithFlagOne.length;
-      } else {
+      if (filterBy !== "ON_UNSEEN") {
         total = countDB + filteredFiles.length - pathsWithFlagOne.length;
       }
     } else {
@@ -353,8 +372,8 @@ async function getSortedFilesAndRecordsByDate(
     }
 
     return { allRecords, total };
-  } catch (e) {
-    console.log("Error : ", e);
+  } catch (error) {
+    console.log("Error : ", error);
   }
 }
 
