@@ -6,6 +6,7 @@ import AdminPanel from "../../../Components/ControlPanel/AdminPanel";
 import Cookies from "js-cookie";
 import jwt_decode from "jwt-decode";
 import NavBarList from "../../../Components/CommonComponents/NavBarList";
+const APP_API_URL = process.env.REACT_APP_API_URL;
 const Groups = () => {
   const [groups, setGroups] = useState([]);
   const [user, setUser] = useState(null);
@@ -35,7 +36,7 @@ const Groups = () => {
     }
   }, [user, navigate]);
   useEffect(() => {
-    fetch("http://localhost:9000/admin/groups", {
+    fetch(`${APP_API_URL}admin/groups`, {
       credentials: "include",
     })
       .then((response) => {
@@ -66,13 +67,10 @@ const Groups = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(
-        "http://localhost:9000/admin/delete-group/" + id,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${APP_API_URL}admin/delete-group/` + id, {
+        method: "DELETE",
+        credentials: "include",
+      });
       if (!response.ok) {
         throw new Error("Failed to delete card");
       } else {

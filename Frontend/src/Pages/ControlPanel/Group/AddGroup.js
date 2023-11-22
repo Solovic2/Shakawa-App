@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import NavBarList from "../../../Components/CommonComponents/NavBarList";
 import AddEditForm from "../../../Components/ControlPanel/AddEditForm";
+const APP_API_URL = process.env.REACT_APP_API_URL;
 const AddGroup = () => {
   const [groupName, setGroupName] = useState("");
   const [error, setError] = useState("");
@@ -25,7 +26,7 @@ const AddGroup = () => {
       name: groupName,
     };
     try {
-      const response = await fetch(`http://localhost:9000/admin/addGroup`, {
+      const response = await fetch(`${APP_API_URL}admin/addGroup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

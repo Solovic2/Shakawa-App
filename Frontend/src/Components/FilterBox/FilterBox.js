@@ -8,6 +8,7 @@ import { useCookies } from "react-cookie";
 import { Pagination } from "antd";
 import SpinnerComponent from "../CommonComponents/Spinner";
 import RefreshButton from "../CommonComponents/RefreshButton";
+const APP_API_URL = process.env.REACT_APP_API_URL;
 const FilterBox = ({ user, notify }) => {
   const navigate = useNavigate();
   const [values, setValues] = useState([]);
@@ -176,7 +177,7 @@ const FilterBox = ({ user, notify }) => {
   const fetchData = (filterBy, searchQuery, page, pageSize) => {
     setLoading(true);
     fetch(
-      "http://localhost:9000/" +
+      APP_API_URL +
         filterBy +
         "/" +
         encodeURIComponent(searchQuery) +

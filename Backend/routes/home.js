@@ -28,51 +28,126 @@ const watcher = chokidar.watch(folderPath, {
 watcher
   .on("add", async (path) => {
     console.log(`File ${path} has been added`);
-    if (!path.includes("tmp1")) {
-      const data = splitPath(path);
-      let item = {
-        type: "add",
-        data: {
+    const data = splitPath(path);
+    let item;
+    try {
+      const existingFile = await prisma.file.findUnique({
+        where: {
           path: globalPath.basename(path),
-          info: "",
-          record: null,
-          mobile: data[0],
-          fileDate: data[1],
-          fileType: data[2],
-          repliedBy: null,
-          groupId: null,
-          status: Status.ON_UNSEEN,
         },
-      };
+      });
+      if (existingFile) {
+        const isPathInFileDB = await prisma.file.update({
+          where: {
+            path: globalPath.basename(path),
+          },
+          data: {
+            isDelete: 0,
+          },
+        });
+        item = {
+          type: "add",
+          data: {
+            id:
+              isPathInFileDB.status !== Status.ON_UNSEEN
+                ? isPathInFileDB.id
+                : null,
+            path: globalPath.basename(path),
+            info: isPathInFileDB.info,
+            record: null,
+            mobile: isPathInFileDB.mobile,
+            fileDate:
+              isPathInFileDB[i].fileDate !== null
+                ? `${isPathInFileDB[i].fileDate
+                    .getDate()
+                    .toString()
+                    .padStart(2, "0")}-${(
+                    isPathInFileDB[i].fileDate.getMonth() + 1
+                  )
+                    .toString()
+                    .padStart(2, "0")}-${isPathInFileDB[
+                    i
+                  ].fileDate.getFullYear()}`
+                : null,
+            fileType: isPathInFileDB.fileType,
+            repliedBy: isPathInFileDB[i].user
+              ? isPathInFileDB[i].user.username
+              : null,
+            groupId: isPathInFileDB.groupId,
+            status: isPathInFileDB.status,
+          },
+        };
+      } else {
+        item = {
+          type: "add",
+          data: {
+            id: null,
+            path: globalPath.basename(path),
+            info: "",
+            record: null,
+            mobile: data[0],
+            fileDate: data[1],
+            fileType: data[2],
+            repliedBy: null,
+            groupId: null,
+            status: Status.ON_UNSEEN,
+          },
+        };
+      }
+
       const message = JSON.stringify(item);
       wss.clients.forEach((client) => {
         client.send(message);
       });
+    } catch (error) {
+      console.log(
+        "Error While Update File in DB when File on OS Added : ",
+        error
+      );
     }
   })
   .on("unlink", async (path) => {
     console.log(`File ${path} has been removed`);
-    // let deleteData = null;
-    // try {
-    //   deleteData = await prisma.file.delete({
-    //     where: {
-    //       path: globalPath.basename(path),
-    //     },
-    //   });
-    // } catch (error) {}
-
-    // if (!path.includes("tmp1")) {
-    //   let message = {
-    //     type: "delete",
-    //     data: {
-    //       path: globalPath.basename(path),
-    //       groupId: deleteData ? deleteData.groupId : null,
-    //     },
-    //   };
-    //   wss.clients.forEach((client) => {
-    //     client.send(JSON.stringify(message));
-    //   });
-    // }
+    try {
+      let deleteData;
+      const existingFile = await prisma.file.findUnique({
+        where: {
+          path: globalPath.basename(path),
+        },
+      });
+      if (existingFile) {
+        deleteData = await prisma.file.update({
+          where: {
+            path: globalPath.basename(path),
+          },
+          data: {
+            isDelete: 1,
+          },
+        });
+      } else {
+        deleteData = await prisma.file.create({
+          data: {
+            path: globalPath.basename(path),
+            isDelete: 1,
+          },
+        });
+      }
+      let message = {
+        type: "delete",
+        data: {
+          path: globalPath.basename(path),
+          groupId: deleteData ? deleteData.groupId : null,
+        },
+      };
+      wss.clients.forEach((client) => {
+        client.send(JSON.stringify(message));
+      });
+    } catch (error) {
+      console.log(
+        "Error When Hide File In DB When File in OS is Deleted : ",
+        error
+      );
+    }
   })
   .on("error", (error) => console.log(`Watcher error: ${error}`));
 
@@ -202,6 +277,7 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
           path: true,
         },
       });
+
       const notUnSeenStatusPaths = filesWithNotUnSeenStatus.map(
         (file) => file.path
       );
@@ -210,6 +286,7 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
       const unSeenFiles = filteredFiles.filter(
         (file) => !notUnSeenStatusPaths.includes(file)
       );
+
       // Get UnSeen filteredComplaintText (Complain Table) by Filter out the complainTexts that match the notUnSeenStatusPaths
       const unSeenComplainText = filteredComplaintText.filter((text) => {
         const path = formatComplaintPath(text);
@@ -287,6 +364,7 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
         where: {
           id: +searchQueryById,
           flag: 0,
+          isDelete: 0,
         },
         select: {
           path: true,
@@ -298,23 +376,21 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
       total = allRecords.length;
       return { allRecords, total };
     }
-    /*** 3.2 return allRecords that are not hided ***/
+    /*** 3.2 return allRecords that are not hided which is search Query is not code ID ***/
     const dataWithFlagOne = await prisma.file.findMany({
       where: {
         flag: 1,
+        isDelete: 0,
       },
       select: {
         path: true,
       },
     });
-
     const pathsWithFlagOne = dataWithFlagOne.map((record) => record.path);
     allRecords = allRecords.filter(
       (record) => !pathsWithFlagOne.includes(record.path)
     );
-
     total = allRecords.length;
-
     allRecords = allRecords.slice(skip, skip + parseInt(pageSize));
     if (allRecords.length > 0) {
       if (filterBy !== "ON_UNSEEN") {
@@ -326,7 +402,11 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
     /*** 3. End Of No.3  ***/
     return { allRecords, total };
   } catch (error) {
-    console.log("Error : ", error);
+    console.log(
+      "Error When Reading OS Files and Complain table texts and search and filter on it : ",
+      error
+    );
+    res.status(500).send("Internal server error");
   }
 }
 
@@ -340,6 +420,7 @@ async function getUserAttachedData(
 ) {
   const where = {
     flag: 0,
+    isDelete: 0,
     group: {
       id: +user.groupId,
     },
@@ -366,47 +447,55 @@ async function getUserAttachedData(
     where.status = filterBy;
   }
 
-  const files = await prisma.file.findMany({
-    where,
-    orderBy: {
-      fileDate: "desc", // 'desc' for descending order (most recent first)
-    },
-    skip,
-    take: parseInt(pageSize),
-    include: {
-      user: true,
-      complaint: true,
-    },
-  });
-  let allFiles = [];
+  try {
+    const files = await prisma.file.findMany({
+      where,
+      orderBy: {
+        fileDate: "desc", // 'desc' for descending order (most recent first)
+      },
+      skip,
+      take: parseInt(pageSize),
+      include: {
+        user: true,
+        complaint: true,
+      },
+    });
+    let allFiles = [];
 
-  for (let i = 0; i < files.length; i++) {
-    const path = files[i].path;
-    const fileData = {
-      id: files[i].id,
-      path: path,
-      record: files[i].complaint,
-      info: files[i].info,
-      mobile: files[i].mobile,
-      fileDate:
-        files[i].fileDate !== null
-          ? `${files[i].fileDate.getDate().toString().padStart(2, "0")}-${(
-              files[i].fileDate.getMonth() + 1
-            )
-              .toString()
-              .padStart(2, "0")}-${files[i].fileDate.getFullYear()}`
-          : null,
-      fileType: files[i].fileType,
-      repliedBy: files[i].user ? files[i].user.username : null,
-      groupId: files[i].groupId,
-      status: files[i].status,
-    };
-    allFiles.push(fileData);
+    for (let i = 0; i < files.length; i++) {
+      const path = files[i].path;
+      const fileData = {
+        id: files[i].status !== Status.ON_UNSEEN ? files[i].id : null,
+        path: path,
+        record: files[i].complaint,
+        info: files[i].info,
+        mobile: files[i].mobile,
+        fileDate:
+          files[i].fileDate !== null
+            ? `${files[i].fileDate.getDate().toString().padStart(2, "0")}-${(
+                files[i].fileDate.getMonth() + 1
+              )
+                .toString()
+                .padStart(2, "0")}-${files[i].fileDate.getFullYear()}`
+            : null,
+        fileType: files[i].fileType,
+        repliedBy: files[i].user ? files[i].user.username : null,
+        groupId: files[i].groupId,
+        status: files[i].status,
+      };
+      allFiles.push(fileData);
+    }
+    const total = await prisma.file.count({
+      where,
+    });
+    return { allFiles, total };
+  } catch (error) {
+    console.log(
+      "Error When Find User's Files in Files Table (Specific Shakwa for User) with searching and filtering on it : ",
+      error
+    );
+    res.status(500).send("Internal server error");
   }
-  const total = await prisma.file.count({
-    where,
-  });
-  return { allFiles, total };
 }
 // Read Files And Records In Database and return it.
 async function readAllFiles(
@@ -442,6 +531,7 @@ async function readAllFiles(
               in: paths,
             },
             flag: 0,
+            isDelete: 0,
           },
           include: {
             user: true,
@@ -454,7 +544,7 @@ async function readAllFiles(
           const element = disabledFiles.find((df) => df.path === path);
           if (element !== undefined && element.flag !== 1) {
             const fileData = {
-              id: element.id,
+              id: element.status !== Status.ON_UNSEEN ? element.id : null,
               path: path,
               record: data[i],
               info: element.info,
@@ -490,6 +580,7 @@ async function readAllFiles(
       allFiles = [];
       let where = {
         flag: 0,
+        isDelete: 0,
         status: filterBy,
       };
       if (searchQuery !== "*") {
@@ -520,7 +611,10 @@ async function readAllFiles(
       for (let i = 0; i < filterStatusData.length; i++) {
         const path = filterStatusData[i].path;
         const fileData = {
-          id: filterStatusData[i].id,
+          id:
+            filterStatusData[i].status !== Status.ON_UNSEEN
+              ? filterStatusData[i].id
+              : null,
           path: path,
           record: filterStatusData[i].complaint,
           info: filterStatusData[i].info,
@@ -552,28 +646,16 @@ async function readAllFiles(
       });
       return { allFiles, total };
     }
-  } catch (err) {
-    console.error(err);
-    throw err;
+  } catch (error) {
+    console.log(
+      "Error While Reading All Files In Function readAllFiles: ",
+      error
+    );
+    res.status(500).send("Internal server error");
   }
 }
 
-function getContentType(fileName) {
-  const fileExt = globalPath.extname(fileName).toLowerCase();
-  switch (fileExt) {
-    case ".jpg":
-    case ".jpeg":
-      return "image/jpeg";
-    case ".png":
-      return "image/png";
-    case ".gif":
-      return "image/gif";
-    // Add more cases for other image formats as needed
-    default:
-      return "application/octet-stream";
-  }
-}
-
+// Function to return the aggregation for shakawa status.
 async function getSummary(user) {
   let allItems = {
     onTotal: {
@@ -602,89 +684,86 @@ async function getSummary(user) {
     },
   };
 
-  let dbStatus;
   let countTotalStatus = 0;
+  let where;
   if (user.role !== Role.User) {
-    dbStatus = await prisma.file.groupBy({
-      where: {
-        flag: 0,
-      },
-      by: ["status"],
-      _count: {
-        status: true,
-      },
-    });
-  } else {
-    dbStatus = await prisma.file.groupBy({
-      where: {
-        flag: 0,
-        groupId: +user.groupId,
-      },
-      by: ["status"],
-      _count: {
-        status: true,
-      },
-    });
-  }
-
-  dbStatus.forEach((element) => {
-    countTotalStatus += element._count.status;
-  });
-  if (user.role !== Role.User) {
-    const allHiddenFiles = await prisma.file.count({
-      where: {
-        flag: 1,
-      },
-    });
-    const allDBComplaintTable = await prisma.complaint.count();
-
-    try {
-      const files = await fs.promises.readdir(folderPath);
-      allItems.onTotal._count.status =
-        files.length + allDBComplaintTable - allHiddenFiles; // Update the count to the desired value
-    } catch (error) {
-      console.log("Error : ", error);
-    }
-
-    // allItems.onTotal._count.status =
-    //   files.length + allDBComplaintTable - allHiddenFiles; // Update the count to the desired value
-
-    let countUnSeenStatus = allItems.onTotal._count.status;
-    // Check if there is an element with status "ON_UNSEEN" in the dbStatus array
-    const onUnseenElement = dbStatus.find(
-      (element) => element.status === "ON_UNSEEN"
-    );
-
-    if (onUnseenElement) {
-      // If "ON_UNSEEN" element is found, update item's _count.status property
-      countUnSeenStatus += onUnseenElement._count.status;
-    }
-
-    allItems.onUnSeen = {
-      _count: {
-        status: countUnSeenStatus - countTotalStatus,
-      },
-      status: "ON_UNSEEN",
+    // Get all status in db in General
+    where = {
+      flag: 0,
+      isDelete: 0,
     };
   } else {
-    allItems.onTotal._count.status = countTotalStatus; // Update the count to the desired value
+    // Get all status in db for specific user
+    where = {
+      flag: 0,
+      isDelete: 0,
+      groupId: +user.groupId,
+    };
   }
-  for (let key in allItems) {
-    if (allItems.hasOwnProperty(key)) {
-      // Access the current property
-      const element = allItems[key];
-      const matchingItem = dbStatus.find(
-        (item) => item.status === element.status
-      );
-      if (matchingItem) {
-        // Update the _count value in the matching item
-        element._count.status += matchingItem._count.status;
+  try {
+    const dbStatus = await prisma.file.groupBy({
+      where,
+      by: ["status"],
+      _count: {
+        status: true,
+      },
+    });
+
+    // Get total count of status.
+    dbStatus.forEach((element) => {
+      countTotalStatus += element._count.status;
+    });
+    // Get Total status for admin / manager
+    if (user.role !== Role.User) {
+      // Store the total of shakawa .
+      const allHiddenFiles = await prisma.file.count({
+        where: {
+          flag: 1,
+          isDelete: 0,
+        },
+      });
+      const allDBComplaintTable = await prisma.complaint.count();
+      // total shakawa = all os files + all complain texts - all hidden files (Os files or complainText which is deleted (hidden))
+      try {
+        const files = await fs.promises.readdir(folderPath);
+
+        allItems.onTotal._count.status =
+          files.length + allDBComplaintTable - allHiddenFiles;
+      } catch (error) {
+        console.log("Error Reading Os Files : ", error);
+        res.status(500).send("Internal server error");
+      }
+      // Count OnUnseen = total of shakawa - total of file table status
+      allItems.onUnSeen = {
+        _count: {
+          status: allItems.onTotal._count.status - countTotalStatus,
+        },
+        status: "ON_UNSEEN",
+      };
+    } else {
+      // total of shakawa = total of file table  status
+      allItems.onTotal._count.status = countTotalStatus; // Update the count to the desired value
+    }
+    // loop through allItems and forEach item add to it the count of status in file table .
+    for (let key in allItems) {
+      if (allItems.hasOwnProperty(key)) {
+        const element = allItems[key];
+        const matchingItem = dbStatus.find(
+          (item) => item.status === element.status
+        );
+        if (matchingItem) {
+          element._count.status += matchingItem._count.status;
+        }
       }
     }
-  }
 
-  return Object.values(allItems);
+    return Object.values(allItems);
+  } catch (error) {
+    console.log("Error When Getting The Aggregation : ", error);
+    res.status(500).send("Internal server error");
+  }
 }
+
 // create a route to get data from the database
 router.get(
   "/:filterBy/:searchQuery/:page/:pageSize",
@@ -694,97 +773,110 @@ router.get(
     const { filterBy, searchQuery, page, pageSize } = req.params;
     const skip = (page - 1) * pageSize;
     if (user.role === Role.User) {
-      const { allFiles, total } = await getUserAttachedData(
-        user,
-        filterBy,
-        searchQuery,
-        skip,
-        pageSize
-      );
+      try {
+        const { allFiles, total } = await getUserAttachedData(
+          user,
+          filterBy,
+          searchQuery,
+          skip,
+          pageSize
+        );
 
-      res.json({ allFiles, total });
+        res.json({ allFiles, total });
+      } catch (error) {
+        console.log("Error in getUserAttachedData function : ", error);
+        res.status(500).send("Internal server error");
+      }
     } else {
-      fs.access(folderPath, fs.constants.F_OK, async (err) => {
-        if (err) {
-          res.status(400).json("تأكد من اتصالك بفولدر الصوتيات من عند الخادم");
-          return;
-        } else {
-          const { allFiles, total } = await readAllFiles(
-            folderPath,
-            filterBy,
-            searchQuery,
-            skip,
-            pageSize
-          );
-          res.json({ allFiles, total });
-        }
-      });
+      try {
+        fs.access(folderPath, fs.constants.F_OK, async (err) => {
+          if (err) {
+            res
+              .status(400)
+              .json("تأكد من اتصالك بفولدر الصوتيات من عند الخادم");
+            return;
+          } else {
+            const { allFiles, total } = await readAllFiles(
+              folderPath,
+              filterBy,
+              searchQuery,
+              skip,
+              pageSize
+            );
+            res.json({ allFiles, total });
+          }
+        });
+      } catch (error) {
+        console.log(
+          "Error When Access File System (Directory could be not available) : ",
+          error
+        );
+        res.status(500).send("Internal server error");
+      }
     }
   }
 );
-
+// API to Get Aggregation.
 router.get("/summary", requireAuth, async (req, res) => {
   const { user } = req;
-  const summary = await getSummary(user);
-  res.send(summary);
+  try {
+    const summary = await getSummary(user);
+    res.send(summary);
+  } catch (error) {
+    console.log("Error in getSummary function: ", error);
+    res.status(500).send("Internal server error");
+  }
 });
 // API To Get Groups
 router.get("/groups", async (req, res) => {
-  const data = await prisma.group.findMany();
-  res.json(data);
-});
-
-// API For Get The File Image
-router.get("/file/:filePath", requireAuth, (req, res) => {
-  const filePath = folderPath[1] + "\\" + req.params.filePath;
-  // Check if the file exists
-  if (fs.existsSync(filePath)) {
-    // Read the image file and convert it to a Base64 encoded string
-    const fileData = fs.readFileSync(filePath, { encoding: "base64" });
-
-    // Determine the content type based on the file extension
-    const contentType = getContentType(req.params.filePath);
-
-    // Send the Base64 encoded image data to the frontend
-    res.json({ contentType, data: fileData });
-  } else {
-    res.status(404).send("File not found");
+  try {
+    const data = await prisma.group.findMany();
+    res.json(data);
+  } catch (error) {
+    console.log("Error while Getting all Groups: ", error);
+    res.status(500).send("Internal server error");
   }
 });
 
+// API to read audio and send it to frontend
 router.get("/audio/:filePath", requireAuth, (req, res) => {
   const filePath = folderPath + "\\" + req.params.filePath;
-  fs.stat(filePath, (err, stat) => {
-    if (err) {
-      res.status(404).send("File not found");
-    } else {
-      const fileSize = stat.size;
-
-      const range = req.headers.range;
-      if (range) {
-        const parts = range.replace(/bytes=/, "").split("-");
-        const start = parseInt(parts[0], 10);
-        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-        const chunkSize = end - start + 1;
-        const file = fs.createReadStream(filePath, { start, end });
-        const head = {
-          "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-          "Accept-Ranges": "bytes",
-          "Content-Length": chunkSize,
-          "Content-Type": "audio/*",
-        };
-        res.writeHead(206, head);
-        file.pipe(res);
+  try {
+    fs.stat(filePath, (err, stat) => {
+      if (err) {
+        res.status(404).send("File not found");
       } else {
-        const head = {
-          "Content-Length": fileSize,
-          "Content-Type": "audio/*",
-        };
-        res.writeHead(200, head);
-        fs.createReadStream(filePath).pipe(res);
+        const fileSize = stat.size;
+
+        const range = req.headers.range;
+        if (range) {
+          const parts = range.replace(/bytes=/, "").split("-");
+          const start = parseInt(parts[0], 10);
+          const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+          const chunkSize = end - start + 1;
+          const file = fs.createReadStream(filePath, { start, end });
+          const head = {
+            "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+            "Accept-Ranges": "bytes",
+            "Content-Length": chunkSize,
+            "Content-Type": "audio/*",
+          };
+          res.writeHead(206, head);
+          file.pipe(res);
+        } else {
+          const head = {
+            "Content-Length": fileSize,
+            "Content-Type": "audio/*",
+          };
+          res.writeHead(200, head);
+          fs.createReadStream(filePath).pipe(res);
+        }
       }
-    }
-  });
+    });
+  } catch (error) {
+    console.log("Error While Reading and Sending Audio : ", error);
+    res.status(500).send("Internal server error");
+  }
 });
 
 /* API for Manager To Attach File To Group */
@@ -848,6 +940,14 @@ router.post("/attach-file-to-group", requireAuth, async (req, res) => {
     }
     updateOrAddFile.repliedBy = null;
     updateOrAddFile.record = record;
+    updateOrAddFile.fileDate =
+      updateOrAddFile.fileDate !== null
+        ? `${updateOrAddFile.fileDate.getDate().toString().padStart(2, "0")}-${(
+            updateOrAddFile.fileDate.getMonth() + 1
+          )
+            .toString()
+            .padStart(2, "0")}-${updateOrAddFile.fileDate.getFullYear()}`
+        : null;
     let item = {
       type: isNotSameGroupID ? "user_delete_add" : "user_add",
       data: updateOrAddFile,
@@ -858,13 +958,9 @@ router.post("/attach-file-to-group", requireAuth, async (req, res) => {
       client.send(message);
     });
     res.status(200).json(updateOrAddFile);
-  } catch (e) {
-    if (e.code === "P2002") {
-      console.log(
-        "There is a unique constraint violation, a new group cannot be created with this name"
-      );
-      res.json("إسم القسم موجود مسبقاً");
-    }
+  } catch (error) {
+    console.log("Error While Attach File To Group : ", error);
+    res.status(500).send("Internal server error");
   }
 });
 
@@ -904,7 +1000,14 @@ router.put("/update-complain/:path", requireAuth, async (req, res) => {
     updateOrAddFile.repliedBy = updateOrAddFile.user
       ? updateOrAddFile.user.username
       : null;
-
+    updateOrAddFile.fileDate =
+      updateOrAddFile.fileDate !== null
+        ? `${updateOrAddFile.fileDate.getDate().toString().padStart(2, "0")}-${(
+            updateOrAddFile.fileDate.getMonth() + 1
+          )
+            .toString()
+            .padStart(2, "0")}-${updateOrAddFile.fileDate.getFullYear()}`
+        : null;
     if (!isSameStatus || !isSameReply) {
       let item = {
         type: "statusOrReply_changed",
@@ -918,7 +1021,7 @@ router.put("/update-complain/:path", requireAuth, async (req, res) => {
     res.status(200).json(updateOrAddFile);
   } catch (error) {
     console.error("Error updating database:", error);
-    res.sendStatus(500);
+    res.status(500).send("Error updating database:");
   }
 });
 

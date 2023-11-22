@@ -1,6 +1,6 @@
 const express = require("express");
 require("dotenv").config();
-
+const port = process.env.PORT;
 const app = express();
 const cookieParser = require("cookie-parser");
 var cors = require("cors");
@@ -32,8 +32,8 @@ app.use("/admin", require("./routes/admin"));
 
 try {
   // start the server
-  app.listen(9000, () => {
-    console.log("Server started on port 9000");
+  app.listen(port, () => {
+    console.log(`Server started on port ${port}`);
   });
 } catch (error) {
   if (error.code === "EADDRINUSE") {

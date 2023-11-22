@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import AddEditForm from "../../../Components/ControlPanel/AddEditForm";
 import NavBarList from "../../../Components/CommonComponents/NavBarList";
+const APP_API_URL = process.env.REACT_APP_API_URL;
 const AddNewUser = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -21,7 +22,7 @@ const AddNewUser = () => {
   }, [user, navigate]);
 
   useEffect(() => {
-    fetch("http://localhost:9000/admin/groups", {
+    fetch(`${APP_API_URL}admin/groups`, {
       credentials: "include",
     })
       .then(async (response) => {
@@ -55,7 +56,7 @@ const AddNewUser = () => {
       group: group === "" ? null : group,
     };
     try {
-      const response = await fetch(`http://localhost:9000/admin/addUser`, {
+      const response = await fetch(`${APP_API_URL}admin/addUser`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

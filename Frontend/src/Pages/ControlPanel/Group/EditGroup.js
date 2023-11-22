@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import NavBarList from "../../../Components/CommonComponents/NavBarList";
 import AddEditForm from "../../../Components/ControlPanel/AddEditForm";
+const APP_API_URL = process.env.REACT_APP_API_URL;
 const EditGroup = () => {
   const [groupName, setGroupName] = useState("");
   const [error, setError] = useState("");
@@ -18,7 +19,7 @@ const EditGroup = () => {
   }, [user, navigate]);
 
   useEffect(() => {
-    fetch(`http://localhost:9000/admin/edit-group/${params.id}`, {
+    fetch(`${APP_API_URL}admin/edit-group/${params.id}`, {
       credentials: "include",
     })
       .then((response) => {
@@ -51,7 +52,7 @@ const EditGroup = () => {
     };
     try {
       const response = await fetch(
-        `http://localhost:9000/admin/update-group/${params.id}`,
+        `${APP_API_URL}admin/update-group/${params.id}`,
         {
           method: "PUT",
           headers: {

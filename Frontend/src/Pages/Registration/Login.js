@@ -3,6 +3,8 @@ import RegistrationForm from "../../Components/Registration/RegistrationForm";
 import "../../Components/Registration/RegistrationForm.css";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
+const APP_API_URL = process.env.REACT_APP_API_URL;
+
 const Login = () => {
   const navigate = useNavigate();
   const [username, setUserName] = useState("");
@@ -26,7 +28,7 @@ const Login = () => {
       username: username,
       password: password,
     };
-    const response = await fetch(`http://localhost:9000/registration/login`, {
+    const response = await fetch(`${APP_API_URL}registration/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

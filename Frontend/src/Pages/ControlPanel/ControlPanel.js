@@ -8,6 +8,7 @@ import jwt_decode from "jwt-decode";
 import NavBarList from "../../Components/CommonComponents/NavBarList";
 import Button from "../../Components/CommonComponents/Button";
 import Modal from "react-bootstrap/Modal";
+const APP_API_URL = process.env.REACT_APP_API_URL;
 const ControlPanel = () => {
   const [users, setUsers] = useState([]);
   const [user, setUser] = useState(null);
@@ -39,7 +40,7 @@ const ControlPanel = () => {
     }
   }, [user, navigate]);
   useEffect(() => {
-    fetch("http://localhost:9000/admin/users", {
+    fetch(`${APP_API_URL}admin/users`, {
       credentials: "include",
     })
       .then((response) => {
@@ -70,13 +71,10 @@ const ControlPanel = () => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(
-        "http://localhost:9000/admin/delete-user/" + id,
-        {
-          method: "DELETE",
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${APP_API_URL}admin/delete-user/` + id, {
+        method: "DELETE",
+        credentials: "include",
+      });
       if (!response.ok) {
         throw new Error("Failed to delete card");
       } else {
@@ -95,7 +93,7 @@ const ControlPanel = () => {
       const formData = new FormData();
       formData.append("file", file);
 
-      fetch("http://localhost:9000/admin/upload-excel-sheet", {
+      fetch(`${APP_API_URL}admin/upload-excel-sheet`, {
         method: "POST",
         body: formData,
       })

@@ -3,6 +3,7 @@ import "../../Components/Registration/RegistrationForm.css";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import RegistrationForm from "../../Components/Registration/RegistrationForm";
+const APP_API_URL = process.env.REACT_APP_API_URL;
 
 const Register = () => {
   const [username, setUserName] = useState("");
@@ -20,7 +21,7 @@ const Register = () => {
   }, [cookie, navigate]);
 
   useEffect(() => {
-    fetch("http://localhost:9000/groups", {
+    fetch(`${APP_API_URL}groups`, {
       credentials: "include",
     })
       .then(async (response) => {
@@ -56,17 +57,14 @@ const Register = () => {
       group: selection,
     };
     try {
-      const response = await fetch(
-        `http://localhost:9000/registration/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({ data: formData }),
-        }
-      );
+      const response = await fetch(`${APP_API_URL}registration/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ data: formData }),
+      });
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.error);

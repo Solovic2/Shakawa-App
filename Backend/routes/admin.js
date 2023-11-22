@@ -20,12 +20,16 @@ wss.on("error", (error) => {
 });
 /* Users */
 router.get("/users", isAdmin, async (req, res) => {
-  const data = await prisma.user.findMany({
-    include: {
-      group: true,
-    },
-  });
-  res.json(data);
+  try {
+    const data = await prisma.user.findMany({
+      include: {
+        group: true,
+      },
+    });
+    res.json(data);
+  } catch (error) {
+    console.log("Error While Getting All User : ", error);
+  }
 });
 router.post("/addUser", isAdmin, async (req, res) => {
   try {
@@ -57,7 +61,11 @@ router.post("/addUser", isAdmin, async (req, res) => {
             .status(400)
             .json("هذا الموظف موجود مسبقاً الرجاء تغيير إسم المستخدم");
         }
-        console.log(`An Error Occur ${e}`);
+        console.log(
+          "Error While Adding New User : ",
+          "هذا الموظف موجود مسبقاً الرجاء تغيير إسم المستخدم",
+          e
+        );
       }
     });
   } catch (error) {
@@ -66,13 +74,17 @@ router.post("/addUser", isAdmin, async (req, res) => {
   }
 });
 router.get("/edit-user/:id", isAdmin, async (req, res) => {
-  const id = req.params.id;
-  const data = await prisma.user.findUnique({
-    where: {
-      id: +id,
-    },
-  });
-  res.json(data);
+  try {
+    const id = req.params.id;
+    const data = await prisma.user.findUnique({
+      where: {
+        id: +id,
+      },
+    });
+    res.json(data);
+  } catch (error) {
+    console.log("Error While Editing User : ", error);
+  }
 });
 router.put("/update-user/:id", isAdmin, async (req, res) => {
   try {
@@ -103,6 +115,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
             updateUser.password,
             user.password
           );
+          // Case : Group Changed
           if (user && user.groupId !== +group) {
             let item = {
               type: "user_changed_group",
@@ -113,6 +126,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
               client.send(message);
             });
           } else if (user && user.role !== role) {
+            // Case : Role Changed
             let item = {
               type: "user_changed_role",
               data: updateUser,
@@ -125,6 +139,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
             (user && user.username !== updateUser.username) ||
             !match
           ) {
+            // Case : Username Or Password Changed
             let item = {
               type: "user_changed_username_password",
               data: updateUser,
@@ -136,8 +151,15 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
           }
           res.json(updateUser);
         } catch (error) {
-          console.log(error);
-          res.status(400).json({ error: "هذا المستخدم موجود من قبل" });
+          if (error.code === "P2002") {
+            console.log(
+              "There is a unique constraint violation, an Update username cannot be created with this name"
+            );
+            res.status(400).json({ error: "هذا المستخدم موجود من قبل" });
+            console.log("Error : ", "هذا المستخدم موجود من قبل", error);
+          } else {
+            console.log("Error While Updating User : ", error);
+          }
         }
         console.log(`User : ${username} Updated With New Password!`);
       });
@@ -154,6 +176,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
           },
         });
         if (user && user.groupId !== +group) {
+          // Case : Group Changed
           let item = {
             type: "user_changed_group",
             data: updateUser,
@@ -164,7 +187,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
           });
         }
         if (user && user.role !== role) {
-          console.log("S");
+          // Case : Role Changed
           let item = {
             type: "user_changed_role",
             data: updateUser,
@@ -175,6 +198,7 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
             client.send(message);
           });
         } else if (user && user.username !== updateUser.username) {
+          // Case : Username Or Password Changed
           let item = {
             type: "user_changed_username_password",
             data: updateUser,
@@ -187,8 +211,15 @@ router.put("/update-user/:id", isAdmin, async (req, res) => {
         res.json(updateUser);
         console.log(`User : ${username} Updated With Same Password!`);
       } catch (error) {
-        console.log(error);
-        res.status(400).json({ error: "هذا المستخدم موجود من قبل" });
+        if (error.code === "P2002") {
+          console.log(
+            "There is a unique constraint violation, an Update username cannot be created with this name"
+          );
+          res.status(400).json({ error: "هذا المستخدم موجود من قبل" });
+          console.log("Error : ", "هذا المستخدم موجود من قبل", error);
+        } else {
+          console.log("Error While Updating User : ", error);
+        }
       }
     }
   } catch (error) {
@@ -204,6 +235,7 @@ router.delete("/delete-user/:id", isAdmin, async (req, res) => {
       },
     });
     let item = {
+      // Case : User Deleted
       type: "user_changed_role",
       data: deleteUser,
     };
@@ -214,14 +246,18 @@ router.delete("/delete-user/:id", isAdmin, async (req, res) => {
     });
     res.json(deleteUser);
   } catch (error) {
-    console.error("Error deleting card:", error);
+    console.log("Error deleting card: ", error);
     res.status(500).send("Internal server error");
   }
 });
 /* Groups */
 router.get("/groups", isAdmin, async (req, res) => {
-  const data = await prisma.group.findMany();
-  res.json(data);
+  try {
+    const data = await prisma.group.findMany();
+    res.json(data);
+  } catch (error) {
+    console.log("Error getting all groups : ", error);
+  }
 });
 router.post("/addGroup", isAdmin, async (req, res) => {
   try {
@@ -232,29 +268,37 @@ router.post("/addGroup", isAdmin, async (req, res) => {
       },
     });
     res.json(createGroup);
-  } catch (e) {
-    if (e.code === "P2002") {
+  } catch (error) {
+    if (error.code === "P2002") {
       console.log(
         "There is a unique constraint violation, a new group cannot be created with this name"
       );
-      res.json("إسم القسم موجود مسبقاً");
+      res.status(400).json({ error: "إسم القسم موجود مسبقاً" });
+      console.log("Error : ", "إسم القسم موجود مسبقاً", error);
+    } else {
+      console.log("Error While Creating Group: ", error);
     }
   }
 });
 router.get("/edit-group/:id", isAdmin, async (req, res) => {
-  const id = req.params.id;
-  const data = await prisma.group.findUnique({
-    where: {
-      id: +id,
-    },
-  });
-  res.json(data);
+  try {
+    const id = req.params.id;
+    const data = await prisma.group.findUnique({
+      where: {
+        id: +id,
+      },
+    });
+    res.json(data);
+  } catch (error) {
+    console.log("Error in editing Group while Find Group Id : ", error);
+  }
 });
 
 router.put("/update-group/:id", isAdmin, async (req, res) => {
   const id = req.params.id;
   const name = req.body.data.name;
   try {
+    // Check if Group name is already in DB
     const groupName = await prisma.group.findUnique({
       where: {
         name: name,
@@ -268,7 +312,8 @@ router.put("/update-group/:id", isAdmin, async (req, res) => {
         name: name,
       },
     });
-    if (groupName == null) {
+    /* if Group name isn't in DB thats means it's a new Group name which means we should send a websocket for all users to log them out because the group is Changed!.*/
+    if (groupName === null) {
       let item = {
         type: "user_changed_group",
         data: data,
@@ -280,36 +325,44 @@ router.put("/update-group/:id", isAdmin, async (req, res) => {
       });
     }
     res.json(data);
-  } catch (e) {
-    if (e.code === "P2002") {
+  } catch (error) {
+    if (error.code === "P2002") {
       console.log(
-        "There is a unique constraint violation, a new group cannot be created with this name"
+        "There is a unique constraint violation, an Update username cannot be created with this name"
       );
-      res.json("إسم القسم موجود مسبقاً");
+      res.status(400).json({ error: "إسم القسم موجود مسبقاً" });
+      console.log("Error : ", "إسم القسم موجود مسبقاً", error);
+    } else {
+      console.log("Error while Updating Group : ", error);
     }
   }
 });
 
 router.delete("/delete-group/:id", isAdmin, async (req, res) => {
-  const id = req.params.id;
-  const data = await prisma.group.delete({
-    where: {
-      id: +id,
-    },
-  });
-  let item = {
-    type: "user_changed_group",
-    data: data,
-  };
-  const message = JSON.stringify(item);
-  console.log(wss.clients);
-  wss.clients.forEach((client) => {
-    client.send(message);
-  });
-  res.json(data);
+  try {
+    const id = req.params.id;
+    const data = await prisma.group.delete({
+      where: {
+        id: +id,
+      },
+    });
+    // Send to websocket so that all users logged out.
+    let item = {
+      type: "user_changed_group",
+      data: data,
+    };
+    const message = JSON.stringify(item);
+    console.log(wss.clients);
+    wss.clients.forEach((client) => {
+      client.send(message);
+    });
+    res.json(data);
+  } catch (error) {
+    console.log("Error While Deleting Group :", error);
+  }
 });
 
-/* Files */
+/* Files APIS FOR POSTMAN TESTS */
 router.post("/add-new-file", async (req, res) => {
   try {
     const data = req.body;
@@ -326,9 +379,9 @@ router.post("/add-new-file", async (req, res) => {
   } catch (e) {
     if (e.code === "P2002") {
       console.log(
-        "There is a unique constraint violation, a new group cannot be created with this name"
+        "There is a unique constraint violation, a new file cannot be created with this name"
       );
-      res.json("هذا الفايل موجود مسبقاً");
+      res.status(400).json({ error: "هذا الفايل موجود مسبقاً" });
     }
   }
 });
@@ -350,12 +403,15 @@ router.post("/update-file/", isAdmin, async (req, res) => {
       },
     });
     res.status(200).json(updateOrAddFile);
-  } catch (e) {
-    if (e.code === "P2002") {
+  } catch (error) {
+    if (error.code === "P2002") {
       console.log(
-        "There is a unique constraint violation, a new group cannot be created with this name"
+        "There is a unique constraint violation, a new file cannot be created with this name"
       );
-      res.json("إسم القسم موجود مسبقاً");
+      res.status(400).json({ error: "هذا الفايل موجود مسبقاً" });
+      console.log("Error : ", "هذا الفايل موجود مسبقاً", error);
+    } else {
+      console.log("Error : ", error);
     }
   }
 });

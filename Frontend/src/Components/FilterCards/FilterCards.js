@@ -5,7 +5,7 @@ import ModalComponent from "./ModalComponent";
 import Button from "../CommonComponents/Button";
 import Modal from "react-bootstrap/Modal";
 import "./ModalComponent.css";
-
+const APP_API_URL = process.env.REACT_APP_API_URL;
 function FilterCards({
   user,
   data,
@@ -62,7 +62,7 @@ function FilterCards({
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:9000/groups", {
+    fetch(`${APP_API_URL}groups`, {
       credentials: "include",
     })
       .then(async (response) => {
@@ -98,7 +98,7 @@ function FilterCards({
   const handleDelete = async (path) => {
     try {
       const response = await fetch(
-        `http://localhost:9000/delete-complain/${encodeURI(path)}`,
+        `${APP_API_URL}delete-complain/${encodeURI(path)}`,
         {
           method: "POST",
           credentials: "include",
@@ -147,7 +147,7 @@ function FilterCards({
 
       try {
         const response = await fetch(
-          `http://localhost:9000/update-complain/${encodeURI(path)}`,
+          `${APP_API_URL}update-complain/${encodeURI(path)}`,
           {
             method: "PUT",
             headers: {
@@ -215,17 +215,14 @@ function FilterCards({
     };
 
     try {
-      const response = await fetch(
-        "http://localhost:9000/attach-file-to-group",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch(`${APP_API_URL}attach-file-to-group`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(formData),
+      });
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error("You are not authenticated");

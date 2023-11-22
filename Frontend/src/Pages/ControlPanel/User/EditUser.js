@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router";
 import { useParams } from "react-router-dom";
 import AddEditForm from "../../../Components/ControlPanel/AddEditForm";
 import NavBarList from "../../../Components/CommonComponents/NavBarList";
+const APP_API_URL = process.env.REACT_APP_API_URL;
 
 const EditUser = () => {
   const [username, setUsername] = useState("");
@@ -26,7 +27,7 @@ const EditUser = () => {
   }, [user, navigate]);
 
   useEffect(() => {
-    fetch("http://localhost:9000/admin/groups", {
+    fetch(`${APP_API_URL}admin/groups`, {
       credentials: "include",
     })
       .then(async (response) => {
@@ -49,7 +50,7 @@ const EditUser = () => {
   }, []);
 
   useEffect(() => {
-    fetch(`http://localhost:9000/admin/edit-user/${params.id}`, {
+    fetch(`${APP_API_URL}admin/edit-user/${params.id}`, {
       credentials: "include",
     })
       .then((response) => {
@@ -91,7 +92,7 @@ const EditUser = () => {
     };
     try {
       const response = await fetch(
-        `http://localhost:9000/admin/update-user/${params.id}`,
+        `${APP_API_URL}admin/update-user/${params.id}`,
         {
           method: "PUT",
           headers: {

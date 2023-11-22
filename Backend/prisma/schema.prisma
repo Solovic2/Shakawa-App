@@ -47,6 +47,7 @@ model File {
   fileType    String?
   info        String?    @default("")
   flag        Int?       @default(0)
+  isDelete    Int?       @default(0)
   status      Status?    @default(ON_UNSEEN)
   groupId     Int?
   group       Group?     @relation(fields: [groupId], references: [id], onUpdate: Cascade, onDelete: SetNull)

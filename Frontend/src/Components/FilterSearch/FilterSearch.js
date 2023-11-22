@@ -8,6 +8,7 @@ import Badge from "react-bootstrap/Badge";
 import SpinnerComponent from "../CommonComponents/Spinner";
 import { Select } from "antd";
 import RefreshButton from "../CommonComponents/RefreshButton";
+const APP_API_URL = process.env.REACT_APP_API_URL;
 const FilterSearch = (props) => {
   const [summary, setSummary] = useState([]);
   const {
@@ -39,7 +40,7 @@ const FilterSearch = (props) => {
   }
   useEffect(() => {
     setLoading(true);
-    fetch("http://localhost:9000/summary", {
+    fetch(`${APP_API_URL}summary`, {
       credentials: "include",
     })
       .then(async (response) => {

@@ -5,6 +5,7 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import "./ModalComponent.css";
 import Button from "../CommonComponents/Button";
+const APP_API_URL = process.env.REACT_APP_API_URL;
 const ModalComponent = ({
   isAudio,
   complainTitle,
@@ -60,7 +61,7 @@ const ModalComponent = ({
               {isAudio ? (
                 <audio
                   controls
-                  src={`http://localhost:9000/audio/${encodeURI(path)}`}
+                  src={`${APP_API_URL}audio/${encodeURI(path)}`}
                   onError={({ currentTarget }) => {
                     currentTarget.onerror = null; // prevents looping
                     // currentTarget.src = "/vector.png";
