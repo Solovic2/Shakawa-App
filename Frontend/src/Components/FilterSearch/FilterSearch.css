@@ -23,11 +23,13 @@
   height: 100%;
 }
 .searchBar form {
+  justify-content: center;
+  display: flex;
   direction: rtl;
   margin-top: 20px;
 }
 .searchBar form .row {
-  justify-content: center;
+  width: 80%;
 }
 
 .searchBar input::placeholder {

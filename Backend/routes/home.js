@@ -180,7 +180,8 @@ const formatComplaintPath = (text) => {
 // Get Files With Last Modified And  Texts from Database
 async function getSortedFilesAndRecordsBySearchQueryAndFilter(
   directoryPath,
-  filterBy,
+  filterByStatus,
+  filterByGroup,
   searchQuery,
   skip,
   pageSize
@@ -249,8 +250,8 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
     });
     /****  End Of No.1  ****/
 
-    /****  2. Get FilteredFiles and Filtered ComplainTexts By Search Query Based On filterBy condition.  ****/
-    if (filterBy === "ON_UNSEEN") {
+    /****  2. Get FilteredFiles and Filtered ComplainTexts By Search Query Based On filterByStatus condition.  ****/
+    if (filterByStatus === "ON_UNSEEN") {
       /*** 2.1 If Status = ON_UNSEEN  ***/
       const complaintPaths = filteredComplaintText.map(formatComplaintPath);
 
@@ -258,7 +259,7 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
       const filesWithNotUnSeenStatus = await prisma.file.findMany({
         where: {
           NOT: {
-            status: filterBy,
+            status: filterByStatus,
           },
           OR: [
             {
@@ -321,6 +322,7 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
       total = unSeenFiles.length + unSeenComplainText.length;
     } else {
       /*** 2.2 If Status != ON_UNSEEN ***/
+
       //  Fill allRecords Array with filteredFiles
       filteredFiles.forEach((file) => {
         const regex = /(\d{2})-(\d{2})-(\d{4})/;
@@ -357,6 +359,30 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
     /****  End Of No.2  ****/
     /*** 3. Return allRecords that not hided in File Table  ***/
     /*** 3.1 If Search Query is code (#ID) return only allRecords that are not hided and id equal code ID ***/
+    if (filterByGroup !== "null") {
+      where = {
+        flag: 0,
+        isDelete: 0,
+        groupId: +filterByGroup,
+      };
+      if (searchQuery.startsWith("#")) {
+        where.id = +searchQuery.slice(1);
+      }
+
+      const dataFilteredByGroup = await prisma.file.findMany({
+        where,
+        select: {
+          path: true,
+        },
+      });
+      const pathsWithGroup = dataFilteredByGroup.map((record) => record.path);
+      allRecords = allRecords.filter((record) =>
+        pathsWithGroup.includes(record.path)
+      );
+      allRecords = allRecords.slice(skip, skip + parseInt(pageSize));
+      total = allRecords.length;
+      return { allRecords, total };
+    }
     let searchQueryById;
     if (searchQuery.startsWith("#")) {
       searchQueryById = searchQuery.slice(1);
@@ -393,7 +419,7 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
     total = allRecords.length;
     allRecords = allRecords.slice(skip, skip + parseInt(pageSize));
     if (allRecords.length > 0) {
-      if (filterBy !== "ON_UNSEEN") {
+      if (filterByStatus !== "ON_UNSEEN") {
         total = countDB + filteredFiles.length - pathsWithFlagOne.length;
       }
     } else {
@@ -413,7 +439,7 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
 // Get Data Attached From Database For User (with filter status)
 async function getUserAttachedData(
   user,
-  filterBy,
+  filterByStatus,
   searchQuery,
   skip,
   pageSize
@@ -443,8 +469,8 @@ async function getUserAttachedData(
       };
     }
   }
-  if (filterBy !== "null") {
-    where.status = filterBy;
+  if (filterByStatus !== "null") {
+    where.status = filterByStatus;
   }
 
   try {
@@ -500,7 +526,8 @@ async function getUserAttachedData(
 // Read Files And Records In Database and return it.
 async function readAllFiles(
   folderPath,
-  filterBy,
+  filterByStatus,
+  filterByGroup,
   searchQuery = "*",
   skip,
   pageSize
@@ -509,12 +536,14 @@ async function readAllFiles(
     let allFiles = [];
     let paths = [];
     let data = [];
+
     // This needs treat with file system with db (OS and Complaint, File Tables)
-    if (filterBy === "null" || filterBy === "ON_UNSEEN") {
+    if (filterByStatus === "null" || filterByStatus === "ON_UNSEEN") {
       const { allRecords, total } =
         await getSortedFilesAndRecordsBySearchQueryAndFilter(
           folderPath,
-          filterBy,
+          filterByStatus,
+          filterByGroup,
           searchQuery,
           skip,
           pageSize
@@ -581,8 +610,11 @@ async function readAllFiles(
       let where = {
         flag: 0,
         isDelete: 0,
-        status: filterBy,
+        status: filterByStatus,
       };
+      if (filterByGroup !== "null") {
+        where.groupId = +filterByGroup;
+      }
       if (searchQuery !== "*") {
         // If Search By Date
         if (searchQuery.match(/^\d{2}-\d{2}-\d{4}$/)) {
@@ -766,17 +798,18 @@ async function getSummary(user) {
 
 // create a route to get data from the database
 router.get(
-  "/:filterBy/:searchQuery/:page/:pageSize",
+  "/:filterByStatus/:filterByGroup/:searchQuery/:page/:pageSize",
   requireAuth,
   async (req, res) => {
     const { user } = req;
-    const { filterBy, searchQuery, page, pageSize } = req.params;
+    const { filterByStatus, filterByGroup, searchQuery, page, pageSize } =
+      req.params;
     const skip = (page - 1) * pageSize;
     if (user.role === Role.User) {
       try {
         const { allFiles, total } = await getUserAttachedData(
           user,
-          filterBy,
+          filterByStatus,
           searchQuery,
           skip,
           pageSize
@@ -798,7 +831,8 @@ router.get(
           } else {
             const { allFiles, total } = await readAllFiles(
               folderPath,
-              filterBy,
+              filterByStatus,
+              filterByGroup,
               searchQuery,
               skip,
               pageSize
@@ -854,22 +888,30 @@ router.get("/audio/:filePath", requireAuth, (req, res) => {
           const start = parseInt(parts[0], 10);
           const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
           const chunkSize = end - start + 1;
-          const file = fs.createReadStream(filePath, { start, end });
-          const head = {
-            "Content-Range": `bytes ${start}-${end}/${fileSize}`,
-            "Accept-Ranges": "bytes",
-            "Content-Length": chunkSize,
-            "Content-Type": "audio/*",
-          };
-          res.writeHead(206, head);
-          file.pipe(res);
+          try {
+            const file = fs.createReadStream(filePath, { start, end });
+            const head = {
+              "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+              "Accept-Ranges": "bytes",
+              "Content-Length": chunkSize,
+              "Content-Type": "audio/*",
+            };
+            res.writeHead(206, head);
+            file.pipe(res);
+          } catch (error) {
+            console.log("Error When Listen to Audio : ", error);
+          }
         } else {
           const head = {
             "Content-Length": fileSize,
             "Content-Type": "audio/*",
           };
           res.writeHead(200, head);
-          fs.createReadStream(filePath).pipe(res);
+          try {
+            fs.createReadStream(filePath).pipe(res);
+          } catch (error) {
+            console.log("Error When Listen to Audio : ", error);
+          }
         }
       }
     });

@@ -16,18 +16,21 @@ const FilterBox = ({ user, notify }) => {
   const [inputValue, setInputValue] = useState("");
   const [inputError, setInputError] = useState(false);
   const [, , removeCookie] = useCookies(["user"]);
-  const [selectedValue, setSelectedValue] = useState(undefined);
+  const [selectedStatusValue, setSelectedStatusValue] = useState(undefined);
   const [total, setTotal] = useState(-1);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("*");
-  const [filterBy, setFilterBy] = useState(null);
+  const [filterByStatus, setFilterByStatus] = useState(null);
   const [firstTime, setFirstTime] = useState(true);
   const [loading, setLoading] = useState(false);
   const [pageIsEmpty, setPageIsEmpty] = useState(false);
+  const [groups, setGroups] = useState([]);
+  const [selectedGroup, setSelectedGroup] = useState(undefined);
+  const [filterByGroup, setFilterByGroup] = useState(null);
   useEffect(() => {
-    fetchData(filterBy, searchQuery, page, pageSize);
-  }, [searchQuery, filterBy, page, pageSize]);
+    fetchData(filterByStatus, searchQuery, filterByGroup, page, pageSize);
+  }, [searchQuery, filterByStatus, filterByGroup, page, pageSize]);
 
   // Get Data From Database And Use WebSocket To Listen When File Added Or Deleted
   useEffect(() => {
@@ -174,11 +177,41 @@ const FilterBox = ({ user, notify }) => {
       });
     }
   }, [filterData]);
-  const fetchData = (filterBy, searchQuery, page, pageSize) => {
+  useEffect(() => {
+    fetch(`${APP_API_URL}groups`, {
+      credentials: "include",
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error("You are not authenticated");
+          } else {
+            throw new Error("Error fetching data");
+          }
+        }
+
+        const data = await response.json();
+        if (data) {
+          setGroups(data);
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }, []);
+  const fetchData = (
+    filterByStatus,
+    searchQuery,
+    filterByGroup,
+    page,
+    pageSize
+  ) => {
     setLoading(true);
     fetch(
       APP_API_URL +
-        filterBy +
+        filterByStatus +
+        "/" +
+        filterByGroup +
         "/" +
         encodeURIComponent(searchQuery) +
         "/" +
@@ -248,11 +281,11 @@ const FilterBox = ({ user, notify }) => {
     }
   };
 
-  const handleFiltration = (value) => {
-    setSelectedValue(value);
+  const handleStatusFiltration = (value) => {
+    setSelectedStatusValue(value);
     if (value === undefined) {
       setPage(1);
-      setFilterBy(null);
+      setFilterByStatus(null);
       setSearchQuery("*");
     } else if (value === "ON_TODAY") {
       const currentDate = new Date();
@@ -261,14 +294,27 @@ const FilterBox = ({ user, notify }) => {
       const year = currentDate.getFullYear();
       const formattedDate = `${year}-${month}-${day}`;
       setPage(1);
-      setFilterBy(null);
+      setFilterByStatus(null);
       setSearchQuery(formattedDate);
     } else {
       setPage(1);
-      setFilterBy(value);
+      setFilterByStatus(value);
       setSearchQuery("*");
     }
   };
+  const handleGroupFiltration = (value) => {
+    setSelectedGroup(value);
+    if (value === undefined) {
+      setPage(1);
+      setFilterByGroup(null);
+      setSearchQuery("*");
+    } else {
+      setPage(1);
+      setFilterByGroup(value);
+      setSearchQuery("*");
+    }
+  };
+
   return (
     <>
       <FilterSearch
@@ -276,8 +322,11 @@ const FilterBox = ({ user, notify }) => {
         inputValue={inputValue}
         handleChange={handleChange}
         handleEnterPress={handleEnterPress}
-        selectedValue={selectedValue}
-        handleFiltration={handleFiltration}
+        selectedStatusValue={selectedStatusValue}
+        handleStatusFiltration={handleStatusFiltration}
+        groups={groups}
+        handleGroupFiltration={handleGroupFiltration}
+        selectedGroup={selectedGroup}
         isError={inputError}
       />
       {loading ? (

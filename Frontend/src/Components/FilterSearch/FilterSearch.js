@@ -13,17 +13,20 @@ const FilterSearch = (props) => {
   const [summary, setSummary] = useState([]);
   const {
     user,
-    selectedValue,
-    handleFiltration,
+    selectedStatusValue,
+    handleStatusFiltration,
     inputValue,
     handleEnterPress,
     handleChange,
+    groups,
+    handleGroupFiltration,
+    selectedGroup,
     isError,
   } = props;
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState(false);
   let optionUnSeen = { label: "لم تقرأ / تسمع بعد", value: "ON_UNSEEN" };
-  const options = [
+  const statusOptions = [
     { label: "شكاوى اليوم", value: "ON_TODAY" },
     { label: "جاري الدراسة", value: "ON_HOLD" },
     { label: "تم الحل والتواصل", value: "ON_SOLVE" },
@@ -36,8 +39,12 @@ const FilterSearch = (props) => {
     },
   ];
   if (user.role !== "User") {
-    options.push(optionUnSeen);
+    statusOptions.push(optionUnSeen);
   }
+  let groupOptions = [];
+  groups?.forEach((element) => {
+    groupOptions.push({ label: element.name, value: element.id });
+  });
   useEffect(() => {
     setLoading(true);
     fetch(`${APP_API_URL}summary`, {
@@ -177,11 +184,30 @@ const FilterSearch = (props) => {
                   height: "100%",
                 }}
                 placeholder="تصنيف (فلتر)"
-                defaultValue={selectedValue}
-                onChange={handleFiltration}
-                options={options}
+                defaultValue={selectedStatusValue}
+                onChange={handleStatusFiltration}
+                options={statusOptions}
               />
             </Col>
+            {user.role !== "User" && (
+              <Col xs={4} md={4}>
+                <Select
+                  allowClear
+                  className="custom-select"
+                  style={{
+                    textAlign: "center",
+                    direction: "rtl",
+                    width: "100%",
+                    height: "100%",
+                  }}
+                  placeholder="القسم..."
+                  defaultValue={selectedGroup}
+                  onChange={handleGroupFiltration}
+                  disabled={selectedStatusValue === "ON_UNSEEN"}
+                  options={groupOptions}
+                />
+              </Col>
+            )}
           </Row>
         </Form>
       </div>

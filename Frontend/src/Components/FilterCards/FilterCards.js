@@ -23,7 +23,7 @@ function FilterCards({
   const [showModal, setShowModal] = useState({});
   const [cardClass, setCardClass] = useState("card");
   const [groups, setGroups] = useState([]);
-  const [selectedValues, setSelectedValues] = useState({});
+  const [selectedValues, setSelectedStatusValues] = useState({});
 
   useEffect(() => {
     if (user) {
@@ -109,7 +109,7 @@ function FilterCards({
       }
       const deleteData = await response.json();
       if (selectedValues[path]) {
-        setSelectedValues((prevValues) => {
+        setSelectedStatusValues((prevValues) => {
           const updatedValues = { ...prevValues };
           delete updatedValues[path];
           return updatedValues;
@@ -199,8 +199,8 @@ function FilterCards({
   };
 
   const handleSelectChange = (path, selectedValue) => {
-    setSelectedValues((prevSelectedValues) => ({
-      ...prevSelectedValues,
+    setSelectedStatusValues((prevSelectedStatusValues) => ({
+      ...prevSelectedStatusValues,
       [path]: selectedValue,
     }));
   };
