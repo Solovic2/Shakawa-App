@@ -358,7 +358,7 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
     }
     /****  End Of No.2  ****/
     /*** 3. Return allRecords that not hided in File Table  ***/
-    /*** 3.1 If Search Query is code (#ID) return only allRecords that are not hided and id equal code ID ***/
+    /*** 3.1 If Filter By Group Return allRecords that matches this group ***/
     if (filterByGroup !== "null") {
       where = {
         flag: 0,
@@ -383,6 +383,7 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
       total = allRecords.length;
       return { allRecords, total };
     }
+    /*** 3.2 If Search Query is code (#ID) return only allRecords that are not hided and id equal code ID ***/
     let searchQueryById;
     if (searchQuery.startsWith("#")) {
       searchQueryById = searchQuery.slice(1);
@@ -402,7 +403,7 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
       total = allRecords.length;
       return { allRecords, total };
     }
-    /*** 3.2 return allRecords that are not hided which is search Query is not code ID ***/
+    /*** 3.3 return allRecords that are not hided which is search Query is not code ID ***/
     const dataWithFlagOne = await prisma.file.findMany({
       where: {
         flag: 1,
@@ -612,6 +613,7 @@ async function readAllFiles(
         isDelete: 0,
         status: filterByStatus,
       };
+      // If Filter By Group
       if (filterByGroup !== "null") {
         where.groupId = +filterByGroup;
       }
