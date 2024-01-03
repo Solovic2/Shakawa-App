@@ -9,6 +9,7 @@ import { Pagination } from "antd";
 import SpinnerComponent from "../CommonComponents/Spinner";
 import RefreshButton from "../CommonComponents/RefreshButton";
 const APP_API_URL = process.env.REACT_APP_API_URL;
+const APP_WEBSOCKET_URL = process.env.WEBSOCKET_URL;
 const FilterBox = ({ user, notify }) => {
   const navigate = useNavigate();
   const [values, setValues] = useState([]);
@@ -34,7 +35,7 @@ const FilterBox = ({ user, notify }) => {
 
   // Get Data From Database And Use WebSocket To Listen When File Added Or Deleted
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:9099");
+    const ws = new WebSocket(`ws://${APP_WEBSOCKET_URL}`);
 
     ws.addEventListener("open", () => {
       console.log("WebSocket connection opened");
