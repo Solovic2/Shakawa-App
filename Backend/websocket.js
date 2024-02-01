@@ -1,3 +1,4 @@
 const WebSocket = require("ws");
-const wss = new WebSocket.Server({ port: 9099 });
+const ws_port = process.env.WEBSOCKET_PORT;
+const wss = new WebSocket.Server({ port: ws_port });
 module.exports = wss
