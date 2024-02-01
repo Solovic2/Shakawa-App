@@ -379,8 +379,8 @@ async function getSortedFilesAndRecordsBySearchQueryAndFilter(
       allRecords = allRecords.filter((record) =>
         pathsWithGroup.includes(record.path)
       );
-      allRecords = allRecords.slice(skip, skip + parseInt(pageSize));
       total = allRecords.length;
+      allRecords = allRecords.slice(skip, skip + parseInt(pageSize));
       return { allRecords, total };
     }
     /*** 3.2 If Search Query is code (#ID) return only allRecords that are not hided and id equal code ID ***/
@@ -698,6 +698,12 @@ async function getSummary(user) {
       },
       status: "ON_TOTAL",
     },
+    onSolve: {
+      _count: {
+        status: 0,
+      },
+      status: "ON_SOLVE",
+    },
     onHold: {
       _count: {
         status: 0,
@@ -709,12 +715,6 @@ async function getSummary(user) {
         status: 0,
       },
       status: "ON_STUDY",
-    },
-    onSolve: {
-      _count: {
-        status: 0,
-      },
-      status: "ON_SOLVE",
     },
   };
 

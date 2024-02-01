@@ -13,13 +13,6 @@ app.use(
   })
 );
 app.use(cookieParser(process.env.SECRET_KEY));
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", "true");
-//   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-//   res.setHeader("Access-Control-Allow-Credentials", "true");
-//   next();
-// });
 
 // Registration
 app.use("/registration", require("./routes/registration"));
@@ -32,7 +25,7 @@ app.use("/admin", require("./routes/admin"));
 
 try {
   // start the server
-  app.listen(port, () => {
+  app.listen(port || 9000, () => {
     console.log(`Server started on port ${port}`);
   });
 } catch (error) {
